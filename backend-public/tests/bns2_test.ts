@@ -121,3 +121,34 @@ Clarinet.test({
     );
   },
 });
+
+Clarinet.test({
+  name: "Ensure that price is high after checking price",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get("deployer")!.address;
+    const account1 = accounts.get("wallet_1")!.address;
+
+    // setup defines initial price function
+    setupNamespace(chain, deployer);
+
+    // get-name-price sets the high price function
+    // that price function can be different to the initial price function
+    let block = chain.mineBlock([
+      Tx.contractCall(
+        "bns2",
+        "get-name-price",
+        ["0x67676767676767676767", "0x6767"],
+        account1
+      ),
+    ]);
+    block.receipts[0].result.expectOk().expectUint(10);
+
+    const priceResponse = chain.callReadOnlyFn(
+      "SP000000000000000000002Q6VF78.bns",
+      "get-name-price",
+      ["0x67676767676767676767", "0x6767"],
+      account1
+    );
+    priceResponse.result.expectOk().expectUint(10000000000000);
+  },
+});
