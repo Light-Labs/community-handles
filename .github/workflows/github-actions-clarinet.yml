@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: "Execute unit tests"
-        uses: docker://hirosystems/clarinet:latest
+        uses: docker://hirosystems/clarinet:0.31.1
         with:
           args: test --coverage --manifest-path=./backend-public/Clarinet.toml
       - name: "Export code coverage"
