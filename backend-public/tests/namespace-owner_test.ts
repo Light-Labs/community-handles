@@ -51,7 +51,14 @@ Clarinet.test({
         ["0x67676767676767676767", "0x3131", "0x00", "0x01020304"],
         account1
       ),
+      Tx.contractCall(
+        "namespace-owner",
+        "name-register",
+        ["0x67676767676767676767", "0x3232", "0x00", "0x01020304"],
+        account2
+      ),
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
+    block.receipts[1].result.expectOk().expectBool(true);
   },
 });
