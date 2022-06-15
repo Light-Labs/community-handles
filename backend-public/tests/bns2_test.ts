@@ -12,7 +12,12 @@ Clarinet.test({
       Tx.contractCall(
         "bns2",
         "name-register",
-        ["0x6767", "0x0000", "0x0102030405060708090a"],
+        [
+          "0x6767",
+          "0x0000",
+          "0x0102030405060708090a",
+          types.principal(account1),
+        ],
         deployer
       ),
     ]);
@@ -81,7 +86,9 @@ Clarinet.test({
       ["0x67676767676767676767", "0x6767"],
       account1
     );
-    priceResponse.result.expectOk().expectUint(9999999999999999999999999999990n);
+    priceResponse.result
+      .expectOk()
+      .expectUint(9999999999999999999999999999990n);
 
     let block = chain.mineBlock([
       Tx.contractCall(
@@ -91,7 +98,7 @@ Clarinet.test({
         account1
       ),
     ]);
-    block.receipts[0].result.expectOk().expectUint(147) // preorder expiry block height
+    block.receipts[0].result.expectOk().expectUint(147); // preorder expiry block height
     // expect burn event (missing api) block.receipts[0].events.expectStxBurnEvent(price);
 
     block = chain.mineBlock([

@@ -1,6 +1,8 @@
 (define-constant err-not-authorized (err u403))
+(define-constant err-already-initialized (err u500))
 
 (define-data-var owned-namespace (buff 20) 0x)
+(define-data-var ready bool false)
 (define-data-var contract-owner principal tx-sender)
 
 ;; pre order namespace to not reveal it early during contract deployment
@@ -18,6 +20,8 @@
                                  (lifetime uint))
     (begin
         (try! (is-contract-owner))
+        (asserts! (not (var-get ready)) err-already-initialized)
+        (var-set ready true)
         (var-set owned-namespace namespace)
         (to-bool-response (contract-call?
         'SP000000000000000000002Q6VF78.bns
@@ -41,16 +45,20 @@
 ;; @param zonefile-hash: the hash of the attachment/zonefile for the name
 (define-public (name-register (name (buff 48))
                               (salt (buff 20))
-                              (zonefile-hash (buff 20)))
+                              (zonefile-hash (buff 20))
+                              (owner principal))
     (let ((namespace (var-get owned-namespace))
         (hash (hash160 (concat (concat (concat name 0x2e) namespace) salt))))
         (try! (is-contract-owner))
         (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
         (try! (as-contract (to-uint-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-preorder hash u1))))
-        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0))))
-        (let ((result (to-bool-response (as-contract (contract-call? 'SP000000000000000000002Q6VF78.bns name-register namespace name salt zonefile-hash)))))
-            (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace u999999999999999999999999999999 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1))))
-            result)))
+        (try! (as-contract (to-bool-response (contract-call?
+        'SP000000000000000000002Q6VF78.bns namespace-update-function-price
+        namespace u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u1 u1))))
+        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-register namespace name salt zonefile-hash))))
+        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-transfer namespace name owner (some zonefile-hash)))))
+        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace u999999999999999999999999999999 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1))))        
+        (ok true)))
 
 ;; convert response to standard uint response with uint error
 ;; (response uint int) (response uint uint)

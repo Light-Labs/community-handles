@@ -9,3 +9,7 @@ costs_version = 2
 [contracts.bns2]
 path = "contracts/bns2.clar"
 depends_on = []
+
+[contracts.namespace-owner]
+path = "contracts/namespace-owner.clar"
+depends_on = []
