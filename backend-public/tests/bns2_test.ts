@@ -1,7 +1,7 @@
 import { Clarinet, Tx, Chain, Account, types, assertEquals } from "./deps.ts";
 import { setupNamespace } from "./utils.ts";
 Clarinet.test({
-  name: "Ensure that user can register name cheaply",
+  name: "Ensure that deployer can register name cheaply and bns price is still high",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const deployer = accounts.get("deployer")!.address;
     const account1 = accounts.get("wallet_1")!.address;
@@ -10,28 +10,23 @@ Clarinet.test({
 
     let block = chain.mineBlock([
       Tx.contractCall(
-        "SP000000000000000000002Q6VF78.bns",
-        "name-preorder",
-        ["0x8838d9f51c845dfa4aa1c26e677196d6fc3186e9", types.uint(10)],
-        account1
-      ),
-    ]);
-    block.receipts[0].result.expectOk();
-
-    block = chain.mineBlock([
-      Tx.contractCall(
         "bns2",
         "name-register",
-        [
-          "0x67676767676767676767",
-          "0x6767",
-          "0x0000",
-          "0x0102030405060708090a",
-        ],
-        account1
+        ["0x6767", "0x0000", "0x0102030405060708090a"],
+        deployer
       ),
     ]);
-    block.receipts[0].result.expectOk();
+    block.receipts[0].result.expectOk().expectBool(true);
+
+    const priceResponse = chain.callReadOnlyFn(
+      "SP000000000000000000002Q6VF78.bns",
+      "get-name-price",
+      ["0x67676767676767676767", "0x6767"],
+      account1
+    );
+    priceResponse.result
+      .expectOk()
+      .expectUint(9999999999999999999999999999990n);
   },
 });
 
@@ -86,7 +81,7 @@ Clarinet.test({
       ["0x67676767676767676767", "0x6767"],
       account1
     );
-    priceResponse.result.expectOk().expectUint(price);
+    priceResponse.result.expectOk().expectUint(9999999999999999999999999999990n);
 
     let block = chain.mineBlock([
       Tx.contractCall(
@@ -96,7 +91,7 @@ Clarinet.test({
         account1
       ),
     ]);
-    block.receipts[0].result.expectOk();
+    block.receipts[0].result.expectOk().expectUint(147) // preorder expiry block height
     // expect burn event (missing api) block.receipts[0].events.expectStxBurnEvent(price);
 
     block = chain.mineBlock([
@@ -112,43 +107,14 @@ Clarinet.test({
         account1
       ),
     ]);
-    block.receipts[0].result.expectOk();
+    block.receipts[0].result.expectErr().expectInt(2007); // burn insuffient
+    /* balance can't be set to the actual price in devnet.toml
     block.receipts[0].events.expectNonFungibleTokenMintEvent(
       "{name: 0x6767, namespace: 0x67676767676767676767}",
       account1,
       "SP000000000000000000002Q6VF78.bns",
       "names"
     );
-  },
-});
-
-Clarinet.test({
-  name: "Ensure that price is high after checking price",
-  async fn(chain: Chain, accounts: Map<string, Account>) {
-    const deployer = accounts.get("deployer")!.address;
-    const account1 = accounts.get("wallet_1")!.address;
-
-    // setup defines initial price function
-    setupNamespace(chain, deployer);
-
-    // get-name-price sets the high price function
-    // that price function can be different to the initial price function
-    let block = chain.mineBlock([
-      Tx.contractCall(
-        "bns2",
-        "get-name-price",
-        ["0x67676767676767676767", "0x6767"],
-        account1
-      ),
-    ]);
-    block.receipts[0].result.expectOk().expectUint(10);
-
-    const priceResponse = chain.callReadOnlyFn(
-      "SP000000000000000000002Q6VF78.bns",
-      "get-name-price",
-      ["0x67676767676767676767", "0x6767"],
-      account1
-    );
-    priceResponse.result.expectOk().expectUint(10000000000000);
+    */
   },
 });
