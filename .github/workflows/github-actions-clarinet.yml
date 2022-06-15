@@ -2,9 +2,6 @@ name: CI
 on: [push]
 jobs:
   tests:
-    defaults:
-      run:
-        working-directory: backend-public
     name: "Test contracts with Clarinet"
     runs-on: ubuntu-latest
     steps:
@@ -12,7 +9,7 @@ jobs:
       - name: "Execute unit tests"
         uses: docker://hirosystems/clarinet:latest
         with:
-          args: test --coverage --manifest-path=./Clarinet.toml
+          args: test --coverage --manifest-path=./backend-public/Clarinet.toml
       - name: "Export code coverage"
         uses: codecov/codecov-action@v1
         with:
