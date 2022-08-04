@@ -10,9 +10,10 @@ Clarinet.test({
 
     let block = chain.mineBlock([
       Tx.contractCall(
-        "bns2",
+        "dao-names",
         "name-register",
         [
+          "0x67676767676767676767",
           "0x6767",
           "0x0000",
           "0x0102030405060708090a",
@@ -24,7 +25,7 @@ Clarinet.test({
     block.receipts[0].result.expectOk().expectBool(true);
 
     const priceResponse = chain.callReadOnlyFn(
-      "SP000000000000000000002Q6VF78.bns",
+      "ST000000000000000000002AMW42H.bns",
       "get-name-price",
       ["0x67676767676767676767", "0x6767"],
       account1
@@ -45,7 +46,7 @@ Clarinet.test({
 
     let block = chain.mineBlock([
       Tx.contractCall(
-        "SP000000000000000000002Q6VF78.bns",
+        "ST000000000000000000002AMW42H.bns",
         "name-preorder",
         ["0x8838d9f51c845dfa4aa1c26e677196d6fc3186e9", types.uint(10)],
         account1
@@ -55,7 +56,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall(
-        "SP000000000000000000002Q6VF78.bns",
+        "ST000000000000000000002AMW42H.bns",
         "name-register",
         [
           "0x67676767676767676767",
@@ -81,7 +82,7 @@ Clarinet.test({
     // check price
     const price = 10_000_000_000_000;
     const priceResponse = chain.callReadOnlyFn(
-      "SP000000000000000000002Q6VF78.bns",
+      "ST000000000000000000002AMW42H.bns",
       "get-name-price",
       ["0x67676767676767676767", "0x6767"],
       account1
@@ -92,18 +93,18 @@ Clarinet.test({
 
     let block = chain.mineBlock([
       Tx.contractCall(
-        "SP000000000000000000002Q6VF78.bns",
+        "ST000000000000000000002AMW42H.bns",
         "name-preorder",
         ["0x8838d9f51c845dfa4aa1c26e677196d6fc3186e9", types.uint(price)],
         account1
       ),
     ]);
-    block.receipts[0].result.expectOk().expectUint(147); // preorder expiry block height
+    block.receipts[0].result.expectOk().expectUint(146); // preorder expiry block height
     // expect burn event (missing api) block.receipts[0].events.expectStxBurnEvent(price);
 
     block = chain.mineBlock([
       Tx.contractCall(
-        "SP000000000000000000002Q6VF78.bns",
+        "ST000000000000000000002AMW42H.bns",
         "name-register",
         [
           "0x67676767676767676767",
@@ -119,7 +120,7 @@ Clarinet.test({
     block.receipts[0].events.expectNonFungibleTokenMintEvent(
       "{name: 0x6767, namespace: 0x67676767676767676767}",
       account1,
-      "SP000000000000000000002Q6VF78.bns",
+      "ST000000000000000000002AMW42H.bns",
       "names"
     );
     */

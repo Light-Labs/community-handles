@@ -6,10 +6,10 @@ telemetry = false
 requirements = []
 costs_version = 2
 
-[contracts.bns2]
-path = "contracts/bns2.clar"
+[contracts.dao-names]
+path = "contracts/dao-names.clar"
 depends_on = []
 
-[contracts.namespace-owner]
-path = "contracts/namespace-owner.clar"
+[contracts.namespace-owner-2]
+path = "contracts/namespace-owner-2.clar"
 depends_on = []

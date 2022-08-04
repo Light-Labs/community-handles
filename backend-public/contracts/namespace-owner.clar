@@ -8,8 +8,8 @@
 ;; register an ordered name
 ;; @event: tx-sender sends 1 stx
 ;; @event: this contracts sends 1 stx
-;; @event: bns2 burns 1 stx
-;; @event: bns2 sends name nft to tx-sender
+;; @event: dao-names burns 1 stx
+;; @event: dao-names sends name nft to tx-sender
 (define-public (name-register (namespace (buff 20))
                               (name (buff 48))
                               (salt (buff 20))
@@ -22,7 +22,7 @@
         (asserts! (is-eq owner tx-sender) err-not-authorized)
         (try! (pay-fees price))
         (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
-        (try! (as-contract (contract-call? .bns2 name-register name salt zonefile-hash owner)))
+        (try! (as-contract (contract-call? .dao-names name-register name salt zonefile-hash owner)))
         (ok true)))
 
 (define-private (pay-fees (price uint))
@@ -51,7 +51,7 @@
 (define-public (set-new-namespace-owner (new-owner principal))
     (begin
         (try! (is-contract-owner))
-        (as-contract (contract-call? .bns2 set-contract-owner new-owner))))
+        (as-contract (contract-call? .dao-names set-contract-owner new-owner))))
 
 (define-private (is-contract-owner)
     (ok (asserts! (is-eq tx-sender (var-get contract-owner)) err-not-authorized)))
