@@ -14,7 +14,7 @@ Clarinet.test({
       Tx.contractCall(
         "dao-names",
         "set-namespace-owner",
-        ["0x67676767676767676767", `'${deployer}.namespace-owner-2`],
+        ["0x67676767676767676767", `'${deployer}.approving-namespace-owner`],
         deployer
       ),
     ]);
@@ -23,7 +23,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall(
-        "namespace-owner-2",
+        "approving-namespace-owner",
         "set-approval-pubkey",
         [
           "0x023cb81443c04149724c20839f438378921240e0f24a7483d24d6b60728057e8f3",
@@ -31,7 +31,7 @@ Clarinet.test({
         deployer
       ),
       Tx.contractCall(
-        "namespace-owner-2",
+        "approving-namespace-owner",
         "name-register",
         [
           "0x3131",
@@ -41,7 +41,7 @@ Clarinet.test({
         account1
       ),
       Tx.contractCall(
-        "namespace-owner-2",
+        "approving-namespace-owner",
         "name-register",
         [
           "0x3232",

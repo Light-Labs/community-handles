@@ -10,6 +10,11 @@ costs_version = 2
 path = "contracts/dao-names.clar"
 depends_on = []
 
-[contracts.namespace-owner-2]
-path = "contracts/namespace-owner-2.clar"
+[contracts.approving-namespace-owner]
+path = "contracts/approving-namespace-owner.clar"
+depends_on = []
+
+
+[contracts.preordering-namespace-owner]
+path = "contracts/preordering-namespace-owner.clar"
 depends_on = []

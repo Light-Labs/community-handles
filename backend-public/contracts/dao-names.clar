@@ -60,7 +60,7 @@
     (let ((owner (unwrap! (map-get? namespace-owners namespace) err-not-found)))
         (ok (asserts! (is-eq contract-caller owner) err-not-authorized))))
 
-(define-read-only (get-owner (namespace (buff 20)))
+(define-read-only (get-namespace-owner (namespace (buff 20)))
     (map-get? namespace-owners namespace))
 
 ;;

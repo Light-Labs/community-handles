@@ -22,7 +22,7 @@
         (asserts! (is-eq owner tx-sender) err-not-authorized)
         (try! (pay-fees price))
         (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
-        (try! (as-contract (contract-call? .dao-names name-register name salt zonefile-hash owner)))
+        ;;(try! (as-contract (contract-call? .dao-names name-register namespace name salt zonefile-hash owner)))
         (ok true)))
 
 (define-private (pay-fees (price uint))
@@ -51,7 +51,8 @@
 (define-public (set-new-namespace-owner (new-owner principal))
     (begin
         (try! (is-contract-owner))
-        (as-contract (contract-call? .dao-names set-contract-owner new-owner))))
+        ;;(as-contract (contract-call? .dao-names set-namespace-owner namespace new-owner))))
+        (ok true)))
 
 (define-private (is-contract-owner)
     (ok (asserts! (is-eq tx-sender (var-get contract-owner)) err-not-authorized)))
