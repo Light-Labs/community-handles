@@ -26,7 +26,7 @@ Clarinet.test({
         "approving-namespace-owner",
         "set-approval-pubkey",
         [
-          "0x023cb81443c04149724c20839f438378921240e0f24a7483d24d6b60728057e8f3",
+          "0x02a3b986401a619013ee1deee0ccba58a5b2235260d55259106e5fc9c53e6a9d71",
         ],
         deployer
       ),
@@ -35,7 +35,7 @@ Clarinet.test({
         "name-register",
         [
           "0x3131",
-          "0x34e6a0fa550c51c9a8871aff2e4cfc1fb122edb64a9c934c6a3b37a41d6302f276d4d564a2da66e15e8743a98ddd658f790ddc103c41bfe117c68cf5b63567d001",
+          "0xd693e8d1d558a5aabff258de2bd5ec6da5eea52ec9b45e4c2c9f34aa547cabb3235ad7223adf3a8d4e51f3cd7fbefdc001fcee9d3e8ddda4643c42dcea07bb6700",
           "0x01020304",
         ],
         account1
@@ -45,14 +45,12 @@ Clarinet.test({
         "name-register",
         [
           "0x3232",
-          "0x044e76eb356a4771edca0b0c3bf297ce32346911e33b473066732bac5e2e2c8a6dcf1242250328b3b2abad1905f0b25f3393b0c0dd63307fa1e6d206e346759d01",
+          "0xb045f07cc9ebcba2cefce1191271d2a740a2f8e58987edf80a7813c51797ab8c085be7ccd4c45bda051179a2037dce166d20ca58ada462dad08eeb45427e74c301",
           "0x01020304",
         ],
         account2
       ),
     ]);
-
-    console.log(block.receipts[1].events);
 
     block.receipts[0].result.expectOk().expectBool(true);
     block.receipts[1].result.expectOk().expectBool(true);
