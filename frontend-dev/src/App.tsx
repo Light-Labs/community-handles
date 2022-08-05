@@ -7,7 +7,15 @@ import { UserCard } from './components/user-card';
 import { NamespaceBuyButton } from './components/namespace-buy-button';
 import { namesApi, network } from './lib/stacksApi';
 import { useEffect, useState } from 'react';
-import { name, namespace, pubkey, signature } from './lib/constants';
+import {
+  daoNamesContract,
+  name,
+  namespace,
+  ownerContract,
+  ownerContractName,
+  pubkey,
+  signature,
+} from './lib/constants';
 import { OwnerPubkeyButton } from './components/owner-pubkey-button';
 import { RegisterNameButton } from './components/register-name-button';
 import { NamespaceSetOwnerButton } from './components/namespace-set-owner-button';
@@ -53,47 +61,37 @@ function Contents() {
           Manage the namespace
         </p>
       </div>
-      <p className="read-the-docs">You should know what you are doing</p>
+
       {stxAddress && (
         <>
+          <p className="read-the-docs">Add the new namespace</p>
           <NamespaceBuyButton
             stxAddress={stxAddress}
-            namespaceContract={{
-              address: 'ST2Z3FFKYT0MGAGWP8A8NZJZHGWW4Q3VGBSC1NDEB',
-              name: 'neutral-gold-scorpion',
-            }}
+            namespaceContract={daoNamesContract}
             namespace={namespace}
             stxToBurn={stxToBurn || 0}
           />
 
           <NamespaceSetOwnerButton
             stxAddress={stxAddress}
-            namespaceContract={{
-              address: 'ST2Z3FFKYT0MGAGWP8A8NZJZHGWW4Q3VGBSC1NDEB',
-              name: 'neutral-gold-scorpion',
-            }}
+            namespaceContract={daoNamesContract}
             namespace={namespace}
-            newOwner={{
-              address: 'ST2Z3FFKYT0MGAGWP8A8NZJZHGWW4Q3VGBSC1NDEB',
-              name: 'superior-yellow-gecko',
-            }}
+            newOwner={ownerContract}
           />
+
+          <p className="read-the-docs">Setup the namespace owner</p>
+
           <OwnerPubkeyButton
             stxAddress={stxAddress}
-            contract={{
-              address: 'ST2Z3FFKYT0MGAGWP8A8NZJZHGWW4Q3VGBSC1NDEB',
-              name: 'superior-yellow-gecko',
-            }}
+            contract={ownerContract}
             namespace={namespace}
             pubkey={pubkey}
           />
+          <p className="read-the-docs">Register a name</p>
 
           <RegisterNameButton
             stxAddress={stxAddress}
-            contract={{
-              address: 'ST2Z3FFKYT0MGAGWP8A8NZJZHGWW4Q3VGBSC1NDEB',
-              name: 'superior-yellow-gecko',
-            }}
+            contract={ownerContract}
             namespace={namespace}
             name={name}
             signature={signature}

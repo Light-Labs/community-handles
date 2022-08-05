@@ -52,9 +52,7 @@ Clarinet.test({
       ),
     ]);
 
-    console.log(block.receipts[0].events);
     console.log(block.receipts[1].events);
-    console.log(block.receipts[2].events);
 
     block.receipts[0].result.expectOk().expectBool(true);
     block.receipts[1].result.expectOk().expectBool(true);

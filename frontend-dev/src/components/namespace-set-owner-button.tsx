@@ -12,8 +12,6 @@ import {
   makeStandardSTXPostCondition,
   PostCondition,
 } from 'micro-stacks/transactions';
-import { namesApi, network } from '../lib/stacksApi';
-import { hashString } from '../lib/strings';
 
 export const NamespaceSetOwnerButton = ({
   stxAddress,
@@ -27,7 +25,7 @@ export const NamespaceSetOwnerButton = ({
   newOwner: { address: string; name: string };
 }) => {
   const { openContractCall } = useOpenContractCall();
-  const label = `set new owner for .${namespace}`;
+  const label = `Set new owner for .${namespace}`;
   const contractAddress = namespaceContract.address;
   const contractName = namespaceContract.name;
   const functionName = 'set-namespace-owner';

@@ -1,4 +1,4 @@
-(define-constant namespace 0x67676767676767676767)
+(define-constant namespace 0x6868686868686868)
 
 (define-data-var contract-owner principal tx-sender)
 (define-data-var dao-treasury principal tx-sender)

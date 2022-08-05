@@ -1,7 +1,17 @@
-import { bufferCV, bufferCVFromString, ClarityValue } from 'micro-stacks/clarity';
+import { bufferCV, bufferCVFromString, ClarityValue, tupleCV } from 'micro-stacks/clarity';
 import { useOpenContractCall } from '@micro-stacks/react';
-import { PostCondition } from 'micro-stacks/transactions';
+import {
+  createAssetInfo,
+  FungibleConditionCode,
+  makeContractNonFungiblePostCondition,
+  makeContractSTXPostCondition,
+  makeStandardSTXPostCondition,
+  NonFungibleConditionCode,
+  PostCondition,
+  PostConditionMode,
+} from 'micro-stacks/transactions';
 import { fromHexString } from '../lib/strings';
+import { daoNamesContract } from '../lib/constants';
 
 export const RegisterNameButton = ({
   stxAddress,
@@ -29,7 +39,22 @@ export const RegisterNameButton = ({
     bufferCV(fromHexString(zoneFileHash)),
   ];
 
-  const postConditions: PostCondition[] = [];
+  const postConditions: PostCondition[] = [
+    makeStandardSTXPostCondition(stxAddress, FungibleConditionCode.LessEqual, 5_000_000),
+    makeContractSTXPostCondition(
+      daoNamesContract.address,
+      daoNamesContract.name,
+      FungibleConditionCode.LessEqual,
+      1
+    ),
+    makeContractNonFungiblePostCondition(
+      daoNamesContract.address,
+      daoNamesContract.name,
+      NonFungibleConditionCode.DoesNotOwn,
+      createAssetInfo('ST000000000000000000002AMW42H', 'bns', 'names'),
+      tupleCV({ namespace: bufferCVFromString(namespace), name: bufferCVFromString(name) })
+    ),
+  ];
 
   return (
     <button
@@ -39,7 +64,7 @@ export const RegisterNameButton = ({
           contractName,
           functionName,
           functionArgs,
-          postConditions,
+          postConditionMode: PostConditionMode.Deny,
         });
       }}
     >
