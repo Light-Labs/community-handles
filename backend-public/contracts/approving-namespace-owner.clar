@@ -6,8 +6,6 @@
 (define-data-var price-in-ustx uint u4999999)
 
 (define-constant err-not-authorized (err u403))
-(define-constant err-not-found (err u404))
-(define-constant err-unsupported-namespace (err u500))
 
 ;; register an ordered name
 ;; @event: tx-sender sends 1 stx

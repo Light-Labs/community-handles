@@ -1,4 +1,8 @@
+(define-constant namespace 0x67676767676767676767)
+
 (define-data-var contract-owner principal tx-sender)
+(define-data-var dao-treasury principal tx-sender)
+
 (define-map name-orders (buff 48) {owner: principal, price: uint})
 
 (define-constant err-not-authorized (err u403))
@@ -10,30 +14,26 @@
 ;; @event: this contracts sends 1 stx
 ;; @event: dao-names burns 1 stx
 ;; @event: dao-names sends name nft to tx-sender
-(define-public (name-register (namespace (buff 20))
-                              (name (buff 48))
-                              (salt (buff 20))
+(define-public (name-register (name (buff 48))
                               (zonefile-hash (buff 20)))
     (let ((name-order (unwrap! (map-get? name-orders name) err-not-found))
             (owner (get owner name-order))
             (price (get price name-order))
-            (hash (hash160 (concat (concat (concat name 0x2e) namespace) 0x00))))
-        (asserts! (is-managed-namespace namespace) err-unsupported-namespace)
+            (salt 0x00)
+            (hash (hash160 (concat (concat (concat name 0x2e) namespace) salt))))
         (asserts! (is-eq owner tx-sender) err-not-authorized)
         (try! (pay-fees price))
         (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
-        ;;(try! (as-contract (contract-call? .dao-names name-register namespace name salt zonefile-hash owner)))
+        (try! (as-contract (contract-call? .dao-names name-register namespace name salt zonefile-hash owner)))
         (ok true)))
 
 (define-private (pay-fees (price uint))
-    (let ((price-in-mia (usda-to-mia price))
-          (fees (/ (* price-in-mia u30) u100)))
-        (if true
-            (ok (print {price-in-mia: price-in-mia, fees: fees}))
-            err-not-found)
-    ;; (try! (contract-call 'SP1H1733V5MZ3SZ9XRW9FKYGEZT0JDGEB8Y634C7R.miamicoin-token-v2 transfer fees owner (as-contract tx-sender)))
-    ;; (try! (contract-call 'SP1H1733V5MZ3SZ9XRW9FKYGEZT0JDGEB8Y634C7R.miamicoin-token-v2 burn (- price-in-mia fees) owner))))
-    ))
+    (let ((amount-ohf (/ (* price u70) u100))
+          (amount-dao (- price amount-ohf)))
+        (try! (stx-transfer? amount-ohf tx-sender (var-get contract-owner)))
+        (try! (stx-transfer? amount-dao tx-sender (var-get dao-treasury)))
+        (ok true)))
+
 ;;
 ;; admin functions
 ;;
@@ -48,10 +48,10 @@
 
 ;; hand over control of namespace to new owner
 ;; can only be called by contract owner of this contract
-(define-public (set-new-namespace-owner (new-owner principal))
+(define-public (set-namespace-owner (new-owner principal))
     (begin
         (try! (is-contract-owner))
-        ;;(as-contract (contract-call? .dao-names set-namespace-owner namespace new-owner))))
+        (try! (as-contract (contract-call? .dao-names set-namespace-owner namespace new-owner)))
         (ok true)))
 
 (define-private (is-contract-owner)
@@ -64,10 +64,6 @@
     (begin
         (try! (is-contract-owner))
         (ok (var-set contract-owner new-owner))))
-
-;; usda mia oracle
-(define-read-only (usda-to-mia (price uint))
-    (* price u1000000))
 
 ;; convenience
 
@@ -84,8 +80,3 @@
     (match value
         success (ok success)
         error (err (to-uint error))))
-;;
-;; oracle
-;;
-(define-read-only (is-managed-namespace (namespace (buff 20)))
-    (is-eq namespace 0x67676767676767676767))
