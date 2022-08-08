@@ -3,7 +3,7 @@ import { Tx, Chain, types, assertEquals } from "./deps.ts";
 export function setupNamespace(chain: Chain, deployer: string) {
   let block = chain.mineBlock([
     Tx.contractCall(
-      "dao-names",
+      "community-handles",
       "namespace-setup",
       ["0x67676767676767676767", types.uint(640_000_000), types.uint(1000)],
       deployer

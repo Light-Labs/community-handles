@@ -10,8 +10,8 @@
 ;; register an ordered name
 ;; @event: tx-sender sends 1 stx
 ;; @event: this contracts sends 1 stx
-;; @event: dao-names burns 1 stx
-;; @event: dao-names sends name nft to tx-sender
+;; @event: community-handles burns 1 stx
+;; @event: community-handles sends name nft to tx-sender
 (define-public (name-register (name (buff 48))
                               (approval-signature (buff 65))
                               (zonefile-hash (buff 20)))
@@ -22,7 +22,7 @@
         (asserts! (secp256k1-verify hash approval-signature (var-get approval-pubkey)) err-not-authorized)
         (try! (pay-fees price))
         (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
-        (try! (as-contract (contract-call? .dao-names name-register namespace name salt zonefile-hash owner)))
+        (try! (as-contract (contract-call? .community-handles name-register namespace name salt zonefile-hash owner)))
         (ok true)))
 
 
@@ -65,7 +65,7 @@
 (define-public (set-new-namespace-owner (new-owner principal))
     (begin
         (try! (is-contract-owner))
-        (as-contract (contract-call? .dao-names set-namespace-owner namespace new-owner))))
+        (as-contract (contract-call? .community-handles set-namespace-owner namespace new-owner))))
 
 (define-private (is-contract-owner)
     (ok (asserts! (is-eq tx-sender (var-get contract-owner)) err-not-authorized)))

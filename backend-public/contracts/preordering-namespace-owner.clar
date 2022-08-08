@@ -12,8 +12,8 @@
 ;; register an ordered name
 ;; @event: tx-sender sends 1 stx
 ;; @event: this contracts sends 1 stx
-;; @event: dao-names burns 1 stx
-;; @event: dao-names sends name nft to tx-sender
+;; @event: community-handles burns 1 stx
+;; @event: community-handles sends name nft to tx-sender
 (define-public (name-register (name (buff 48))
                               (zonefile-hash (buff 20)))
     (let ((name-order (unwrap! (map-get? name-orders name) err-not-found))
@@ -24,7 +24,7 @@
         (asserts! (is-eq owner tx-sender) err-not-authorized)
         (try! (pay-fees price))
         (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
-        (try! (as-contract (contract-call? .dao-names name-register namespace name salt zonefile-hash owner)))
+        (try! (as-contract (contract-call? .community-handles name-register namespace name salt zonefile-hash owner)))
         (ok true)))
 
 (define-private (pay-fees (price uint))
@@ -51,7 +51,7 @@
 (define-public (set-namespace-owner (new-owner principal))
     (begin
         (try! (is-contract-owner))
-        (try! (as-contract (contract-call? .dao-names set-namespace-owner namespace new-owner)))
+        (try! (as-contract (contract-call? .community-handles set-namespace-owner namespace new-owner)))
         (ok true)))
 
 (define-private (is-contract-owner)

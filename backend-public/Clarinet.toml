@@ -6,8 +6,8 @@ telemetry = false
 requirements = []
 costs_version = 2
 
-[contracts.dao-names]
-path = "contracts/dao-names.clar"
+[contracts.community-handles]
+path = "contracts/community-handles.clar"
 depends_on = []
 
 [contracts.approving-namespace-owner]

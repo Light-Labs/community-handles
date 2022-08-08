@@ -12,7 +12,7 @@ Clarinet.test({
 
     let block = chain.mineBlock([
       Tx.contractCall(
-        "dao-names",
+        "community-handles",
         "set-namespace-owner",
         ["0x67676767676767676767", `'${deployer}.approving-namespace-owner`],
         deployer
