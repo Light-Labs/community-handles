@@ -28,8 +28,11 @@
 (define-private (pay-fees (price uint))
     (let ((amount-ohf (/ (* price u70) u100))
           (amount-dao (- price amount-ohf)))
-        (try! (stx-transfer? amount-ohf tx-sender (var-get contract-owner)))
-        (stx-transfer? amount-dao tx-sender (var-get dao-treasury))))
+        (and (> amount-ohf u0)
+            (try! (stx-transfer? amount-ohf tx-sender (var-get contract-owner))))
+        (and (> amount-ohf u0)
+            (try! (stx-transfer? amount-dao tx-sender (var-get dao-treasury))))
+        (ok true)))
 
 ;;
 ;; admin functions

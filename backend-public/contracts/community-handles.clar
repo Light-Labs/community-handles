@@ -1,3 +1,6 @@
+;; @contract Community Handles
+;; @version 1
+
 (define-constant err-not-authorized (err u403))
 (define-constant internal-price-high u999999999999999999999999999999)
 (define-constant salt 0x00)
@@ -7,7 +10,10 @@
 ;; variables for iteration functions
 (define-data-var ctx-bulk-registration-namespace (buff 20) 0x00)
 
-;; register the namespace on-chain
+;; @desc register the namespace on-chain
+;; @param namespace; namespace to register
+;; @param stx-to-burn; namespace price in ustx
+;; @param lifetime; number of blocks until a name expires
 (define-public (namespace-setup (namespace (buff 20)) (stx-to-burn uint) (lifetime uint))
     (let ((hashed-salted-namespace (hash160 (concat namespace salt))))
         (map-set namespace-controller namespace contract-caller)
@@ -24,16 +30,16 @@
                                 namespace-ready namespace)))
         (ok true)))
 
-;; register name for 1 ustx by namespace controller only
-;; @param name: the name in the managed namespace
-;; @param salt: any value works
-;; @param zonefile-hash: the hash of the attachment/zonefile for the name
+;; @desc register name for 1 ustx by namespace controller only
+;; @param namespace; controlled namespace
+;; @param name; name in the controlled namespace
+;; @param zonefile-hash; hash of the attachment/zonefile for the name
+;; @param owner; principal owning the name after registration 
 (define-public (name-register (namespace (buff 20))
                               (name (buff 48))
                               (zonefile-hash (buff 20))
                               (owner principal))
-    (let (
-        (hash (hash160 (concat (concat (concat name 0x2e) namespace) salt))))
+    (let ((hash (hash160 (concat (concat (concat name 0x2e) namespace) salt))))
         (try! (is-namespace-controller namespace))
         (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
         (try! (as-contract (to-uint-response (contract-call? 'ST000000000000000000002AMW42H.bns name-preorder hash u1))))
@@ -55,9 +61,9 @@
         (try! (as-contract (to-bool-response (contract-call? 'ST000000000000000000002AMW42H.bns name-transfer namespace name (get owner entry) (some zonefile-hash)))))
         (ok true)))
 
-;; register multiple namens for 1 ustx by namespace controller only
-;; @param name: the name in the controlled namespace
-;; @param zonefile-hash: the hash of the attachment/zonefile for the name
+;; @desc register multiple namens for 1 ustx by namespace controller only
+;; @param namespace; controlled namespace
+;; @param names; list of names with owner and hash of the attachment/zonefile for the name
 (define-public (bulk-name-register (namespace (buff 20)) (names (list 1000 {name: (buff 48), owner: principal, zonefile-hash: (buff 20)})))
     (begin
         (try! (is-namespace-controller namespace))
@@ -89,9 +95,14 @@
 (define-read-only (get-namespace-controller (namespace (buff 20)))
     (map-get? namespace-controller namespace))
 
+;; @desc set new namespace controller, by current namespace owner only
 ;;
-;; Admin functions
+;; It is the responsibility of the namespace controller to
+;; ensure that the new controller can manage the namespace.
+;; Otherwise, it might happen that new names can NOT be registered anymore.
 ;;
+;; @param namespace; controlled namespace by contract caller
+;; @param new-controller; new namespace controller
 (define-public (set-namespace-controller (namespace (buff 20)) (new-controller principal))
     (begin
         (try! (is-namespace-controller namespace))
