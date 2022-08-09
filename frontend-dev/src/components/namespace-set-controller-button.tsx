@@ -13,25 +13,25 @@ import {
   PostCondition,
 } from 'micro-stacks/transactions';
 
-export const NamespaceSetOwnerButton = ({
+export const NamespaceSetControllerButton = ({
   stxAddress,
   namespaceContract,
   namespace,
-  newOwner,
+  newController,
 }: {
   stxAddress: string;
   namespaceContract: { address: string; name: string };
   namespace: string;
-  newOwner: { address: string; name: string };
+  newController: { address: string; name: string };
 }) => {
   const { openContractCall } = useOpenContractCall();
-  const label = `Set new owner for .${namespace}`;
+  const label = `Set new controller for .${namespace}`;
   const contractAddress = namespaceContract.address;
   const contractName = namespaceContract.name;
-  const functionName = 'set-namespace-owner';
+  const functionName = 'set-namespace-controller';
   const functionArgs: ClarityValue[] = [
     bufferCVFromString(namespace),
-    contractPrincipalCV(newOwner.address, newOwner.name),
+    contractPrincipalCV(newController.address, newController.name),
   ];
 
   const postConditions: PostCondition[] = [];

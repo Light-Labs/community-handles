@@ -13,8 +13,8 @@ Clarinet.test({
     let block = chain.mineBlock([
       Tx.contractCall(
         "community-handles",
-        "set-namespace-owner",
-        ["0x67676767676767676767", `'${deployer}.approving-namespace-owner`],
+        "set-namespace-controller",
+        ["0x67676767676767676767", `'${deployer}.approving-namespace-controller`],
         deployer
       ),
     ]);
@@ -23,7 +23,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall(
-        "approving-namespace-owner",
+        "approving-namespace-controller",
         "set-approval-pubkey",
         [
           "0x02a3b986401a619013ee1deee0ccba58a5b2235260d55259106e5fc9c53e6a9d71",
@@ -31,7 +31,7 @@ Clarinet.test({
         deployer
       ),
       Tx.contractCall(
-        "approving-namespace-owner",
+        "approving-namespace-controller",
         "name-register",
         [
           "0x3131",
@@ -41,7 +41,7 @@ Clarinet.test({
         account1
       ),
       Tx.contractCall(
-        "approving-namespace-owner",
+        "approving-namespace-controller",
         "name-register",
         [
           "0x3232",

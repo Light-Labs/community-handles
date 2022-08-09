@@ -1,10 +1,10 @@
 // as ascii
 export const namespace = 'hhhhhhhh';
-export const daoNamesContract = {
+export const communityHandlesContract = {
   address: 'ST2Z3FFKYT0MGAGWP8A8NZJZHGWW4Q3VGBSC1NDEB',
   name: 'neutral-gold-scorpion',
 };
-export const ownerContract = {
+export const controllerContract = {
   address: 'ST2Z3FFKYT0MGAGWP8A8NZJZHGWW4Q3VGBSC1NDEB',
   name: 'beneficial-black-sheep',
 };

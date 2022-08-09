@@ -1,7 +1,8 @@
 (define-constant namespace 0x67676767676767676767)
+(define-constant name-salt 0x00)
 
 (define-data-var contract-owner principal tx-sender)
-(define-data-var dao-treasury principal tx-sender)
+(define-data-var community-treasury principal tx-sender)
 (define-data-var approval-pubkey (buff 33) 0x00)
 (define-data-var price-in-ustx uint u4999999)
 
@@ -9,28 +10,27 @@
 
 ;; register an ordered name
 ;; @event: tx-sender sends 1 stx
-;; @event: this contracts sends 1 stx
 ;; @event: community-handles burns 1 stx
 ;; @event: community-handles sends name nft to tx-sender
 (define-public (name-register (name (buff 48))
                               (approval-signature (buff 65))
                               (zonefile-hash (buff 20)))
     (let ((price (var-get price-in-ustx))
-            (salt 0x00)
-            (owner tx-sender)
-            (hash (sha256 (concat (concat (concat name 0x2e) namespace) salt))))
+          (owner tx-sender)
+          (hash (sha256 (concat (concat (concat name 0x2e) namespace) name-salt))))
         (asserts! (secp256k1-verify hash approval-signature (var-get approval-pubkey)) err-not-authorized)
         (try! (pay-fees price))
-        (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
-        (try! (as-contract (contract-call? .community-handles name-register namespace name salt zonefile-hash owner)))
+        (try! (contract-call? .community-handles name-register namespace name zonefile-hash owner))
         (ok true)))
 
 
 (define-private (pay-fees (price uint))
     (let ((amount-ohf (/ (* price u70) u100))
-          (amount-dao (- price amount-ohf)))
-        (try! (stx-transfer? amount-ohf tx-sender (var-get contract-owner)))
-        (try! (stx-transfer? amount-dao tx-sender (var-get dao-treasury)))
+          (amount-community (- price amount-ohf)))
+        (and (> amount-ohf u0)
+            (try! (stx-transfer? amount-ohf tx-sender (var-get contract-owner))))
+        (and (> amount-community u0)
+            (try! (stx-transfer? amount-community tx-sender (var-get community-treasury))))
         (ok true)))
 
 ;;
@@ -42,10 +42,10 @@
         (var-set price-in-ustx amount-in-ustx)
         (ok true)))
 
-(define-public (set-dao-treasury (new-treasury principal))
+(define-public (set-community-treasury (new-treasury principal))
    (begin
         (try! (is-contract-owner))
-        (var-set dao-treasury new-treasury)
+        (var-set community-treasury new-treasury)
         (ok true)))
 
 (define-public (set-approval-pubkey (new-pubkey (buff 33)))
@@ -58,14 +58,16 @@
 (define-public (set-contract-owner (new-owner principal))
     (begin
         (try! (is-contract-owner))
-        (ok (var-set contract-owner new-owner))))
+        (var-set contract-owner new-owner)
+        (ok true)))
 
-;; hand over control of namespace to new owner
+;; hand over control of namespace to new controller
 ;; can only be called by contract owner of this contract
-(define-public (set-new-namespace-owner (new-owner principal))
+(define-public (set-namespace-controller (new-controller principal))
     (begin
         (try! (is-contract-owner))
-        (as-contract (contract-call? .community-handles set-namespace-owner namespace new-owner))))
+        (try! (as-contract (contract-call? .community-handles set-namespace-controller namespace new-controller)))
+        (ok true)))
 
 (define-private (is-contract-owner)
     (ok (asserts! (is-eq tx-sender (var-get contract-owner)) err-not-authorized)))

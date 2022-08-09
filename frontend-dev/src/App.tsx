@@ -8,17 +8,16 @@ import { NamespaceBuyButton } from './components/namespace-buy-button';
 import { namesApi, network } from './lib/stacksApi';
 import { useEffect, useState } from 'react';
 import {
-  daoNamesContract,
+  communityHandlesContract,
   name,
   namespace,
-  ownerContract,
-  ownerContractName,
+  controllerContract,
   pubkey,
   signature,
 } from './lib/constants';
 import { OwnerPubkeyButton } from './components/owner-pubkey-button';
 import { RegisterNameButton } from './components/register-name-button';
-import { NamespaceSetOwnerButton } from './components/namespace-set-owner-button';
+import { NamespaceSetControllerButton } from './components/namespace-set-controller-button';
 
 function Contents() {
   const { stxAddress } = MicroStacks.useAccount();
@@ -67,31 +66,32 @@ function Contents() {
           <p className="read-the-docs">Add the new namespace</p>
           <NamespaceBuyButton
             stxAddress={stxAddress}
-            namespaceContract={daoNamesContract}
+            namespaceContract={communityHandlesContract}
             namespace={namespace}
             stxToBurn={stxToBurn || 0}
           />
 
-          <NamespaceSetOwnerButton
+          <NamespaceSetControllerButton
             stxAddress={stxAddress}
-            namespaceContract={daoNamesContract}
+            namespaceContract={communityHandlesContract}
             namespace={namespace}
-            newOwner={ownerContract}
+            newController={controllerContract}
           />
 
-          <p className="read-the-docs">Setup the namespace owner</p>
+          <p className="read-the-docs">Setup the namespace controller</p>
 
           <OwnerPubkeyButton
             stxAddress={stxAddress}
-            contract={ownerContract}
+            contract={controllerContract}
             namespace={namespace}
             pubkey={pubkey}
           />
+          
           <p className="read-the-docs">Register a name</p>
 
           <RegisterNameButton
             stxAddress={stxAddress}
-            contract={ownerContract}
+            contract={controllerContract}
             namespace={namespace}
             name={name}
             signature={signature}

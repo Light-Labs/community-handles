@@ -13,8 +13,8 @@ Clarinet.test({
     let block = chain.mineBlock([
       Tx.contractCall(
         "community-handles",
-        "set-namespace-owner",
-        ["0x67676767676767676767", `'${deployer}.preordering-namespace-owner`],
+        "set-namespace-controller",
+        ["0x67676767676767676767", `'${deployer}.preordering-namespace-controller`],
         deployer
       ),
     ]);
@@ -23,7 +23,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall(
-        "preordering-namespace-owner",
+        "preordering-namespace-controller",
         "bulk-order",
         [
           types.list([
@@ -37,19 +37,19 @@ Clarinet.test({
         deployer
       ),
       Tx.contractCall(
-        "preordering-namespace-owner",
+        "preordering-namespace-controller",
         "name-register",
         ["0x3131", "0x01020304"],
         account1
       ),
       Tx.contractCall(
-        "preordering-namespace-owner",
+        "preordering-namespace-controller",
         "name-register",
         ["0x3232", "0x01020304"],
         account2
       ),
     ]);
-    block.receipts[0].result.expectOk().expectBool(true);
+    block.receipts[0].result.expectOk().expectList()[0].expectBool(true);
     block.receipts[1].result.expectOk().expectBool(true);
     block.receipts[2].result.expectErr().expectUint(404); // order not found
   },

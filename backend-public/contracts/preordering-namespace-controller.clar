@@ -18,20 +18,20 @@
                               (zonefile-hash (buff 20)))
     (let ((name-order (unwrap! (map-get? name-orders name) err-not-found))
             (owner (get owner name-order))
-            (price (get price name-order))
-            (salt 0x00)
-            (hash (hash160 (concat (concat (concat name 0x2e) namespace) salt))))
+            (price (get price name-order)))
         (asserts! (is-eq owner tx-sender) err-not-authorized)
         (try! (pay-fees price))
         (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
-        (try! (as-contract (contract-call? .community-handles name-register namespace name salt zonefile-hash owner)))
+        (try! (as-contract (contract-call? .community-handles name-register namespace name zonefile-hash owner)))
         (ok true)))
 
 (define-private (pay-fees (price uint))
     (let ((amount-ohf (/ (* price u70) u100))
           (amount-dao (- price amount-ohf)))
-        (try! (stx-transfer? amount-ohf tx-sender (var-get contract-owner)))
-        (try! (stx-transfer? amount-dao tx-sender (var-get dao-treasury)))
+        (and (> amount-ohf u0)
+            (try! (stx-transfer? amount-ohf tx-sender (var-get contract-owner))))
+        (and (> amount-ohf u0)
+            (try! (stx-transfer? amount-dao tx-sender (var-get dao-treasury))))
         (ok true)))
 
 ;;
@@ -40,19 +40,17 @@
 (define-public (bulk-order (details (list 1000 {owner: principal, name: (buff 48), price: uint})))
     (begin
         (try! (is-contract-owner))
-        (map insert-order details)
-        (ok true)))
+        (ok (map insert-order details))))
 
 (define-private (insert-order (order {owner: principal, name: (buff 48), price: uint}))
     (map-set name-orders (get name order) {owner: (get owner order), price: (get price order)}))
 
-;; hand over control of namespace to new owner
+;; hand over control of namespace to new controller
 ;; can only be called by contract owner of this contract
-(define-public (set-namespace-owner (new-owner principal))
+(define-public (set-namespace-controller (new-controller principal))
     (begin
         (try! (is-contract-owner))
-        (try! (as-contract (contract-call? .community-handles set-namespace-owner namespace new-owner)))
-        (ok true)))
+        (as-contract (contract-call? .community-handles set-namespace-controller namespace new-controller))))
 
 (define-private (is-contract-owner)
     (ok (asserts! (is-eq tx-sender (var-get contract-owner)) err-not-authorized)))
