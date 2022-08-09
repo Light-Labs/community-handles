@@ -1,5 +1,6 @@
 (define-constant err-not-authorized (err u403))
 (define-constant internal-price-high u999999999999999999999999999999)
+(define-constant salt 0x00)
 
 (define-map namespace-controller (buff 20) principal)
 
@@ -8,15 +9,14 @@
 
 ;; register the namespace on-chain
 (define-public (namespace-setup (namespace (buff 20)) (stx-to-burn uint) (lifetime uint))
-    (let ((namespace-salt 0x00)
-          (hashed-salted-namespace (hash160 (concat namespace namespace-salt))))    
+    (let ((hashed-salted-namespace (hash160 (concat namespace salt))))
         (map-set namespace-controller namespace contract-caller)
         (try! (contract-call? 'ST000000000000000000002AMW42H.bns
                 namespace-preorder hashed-salted-namespace stx-to-burn))    
         (try! (contract-call? 'ST000000000000000000002AMW42H.bns
                                 namespace-reveal
                                 namespace
-                                namespace-salt
+                                salt
                                 internal-price-high u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1
                                 lifetime
                                 (as-contract tx-sender)))        
@@ -33,7 +33,6 @@
                               (zonefile-hash (buff 20))
                               (owner principal))
     (let (
-        (salt 0x00)
         (hash (hash160 (concat (concat (concat name 0x2e) namespace) salt))))
         (try! (is-namespace-controller namespace))
         (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
@@ -46,8 +45,7 @@
 
 ;; iterator for bulk-name-register
 (define-private (bulk-name-register-iter (entry {name: (buff 48), owner: principal, zonefile-hash: (buff 20)}) (prev (response bool uint)))
-    (let ((salt 0x00)
-          (namespace (var-get ctx-bulk-registration-namespace))
+    (let ((namespace (var-get ctx-bulk-registration-namespace))
           (name (get name entry))
           (hash (hash160 (concat (concat (concat name 0x2e) namespace) salt)))
           (zonefile-hash (get zonefile-hash entry)))
@@ -68,7 +66,8 @@
         (try! (as-contract (to-bool-response (contract-call? 'ST000000000000000000002AMW42H.bns namespace-update-function-price namespace u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u1 u1))))
         (try! (fold bulk-name-register-iter names (ok true)))
         (var-set ctx-bulk-registration-namespace 0x00)
-        (as-contract (to-bool-response (contract-call? 'ST000000000000000000002AMW42H.bns namespace-update-function-price namespace internal-price-high u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1)))))
+        (try! (as-contract (to-bool-response (contract-call? 'ST000000000000000000002AMW42H.bns namespace-update-function-price namespace internal-price-high u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1))))
+        (ok true)))
 
 ;; convert response to standard uint response with uint error
 ;; (response uint int) (response uint uint)
@@ -96,4 +95,5 @@
 (define-public (set-namespace-controller (namespace (buff 20)) (new-controller principal))
     (begin
         (try! (is-namespace-controller namespace))
-        (ok (map-set namespace-controller namespace new-controller))))
+        (map-set namespace-controller namespace new-controller)
+        (ok true)))
