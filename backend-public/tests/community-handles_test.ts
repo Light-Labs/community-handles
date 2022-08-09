@@ -37,6 +37,146 @@ Clarinet.test({
 });
 
 Clarinet.test({
+  name: "Ensure that owner can renew name",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get("deployer")!.address;
+    const account1 = accounts.get("wallet_1")!.address;
+
+    setupNamespace(chain, deployer);
+
+    let block = chain.mineBlock([
+      Tx.contractCall(
+        "community-handles",
+        "name-register",
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          "0x0102030405060708090a",
+          types.principal(account1),
+        ],
+        deployer
+      ),
+      Tx.contractCall(
+        "ST000000000000000000002AMW42H.bns",
+        "name-renewal",
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          types.uint(9999999999999999999999999999990n),
+          types.none(),
+          types.none(),
+        ],
+        account1
+      ),
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+    block.receipts[1].result.expectOk().expectBool(true);
+  },
+});
+
+Clarinet.test({
+  name: "Ensure that owner can transfer name",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get("deployer")!.address;
+    const account1 = accounts.get("wallet_1")!.address;
+    const account2 = accounts.get("wallet_2")!.address;
+
+    setupNamespace(chain, deployer);
+
+    let block = chain.mineBlock([
+      Tx.contractCall(
+        "community-handles",
+        "name-register",
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          "0x0102030405060708090a",
+          types.principal(account1),
+        ],
+        deployer
+      ),
+      Tx.contractCall(
+        "ST000000000000000000002AMW42H.bns",
+        "name-transfer",
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          types.principal(account2),
+          types.none(),
+        ],
+        account1
+      ),
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+    block.receipts[1].result.expectOk().expectBool(true);
+  },
+});
+
+Clarinet.test({
+  name: "Ensure that owner can update name",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get("deployer")!.address;
+    const account1 = accounts.get("wallet_1")!.address;
+
+    setupNamespace(chain, deployer);
+
+    let block = chain.mineBlock([
+      Tx.contractCall(
+        "community-handles",
+        "name-register",
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          "0x0102030405060708090a",
+          types.principal(account1),
+        ],
+        deployer
+      ),
+      Tx.contractCall(
+        "ST000000000000000000002AMW42H.bns",
+        "name-update",
+        ["0x67676767676767676767", "0x6767", "0x0102030405060708090b"],
+        account1
+      ),
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+    block.receipts[1].result.expectOk().expectBool(true);
+  },
+});
+
+Clarinet.test({
+  name: "Ensure that owner can revoke name",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get("deployer")!.address;
+    const account1 = accounts.get("wallet_1")!.address;
+
+    setupNamespace(chain, deployer);
+
+    let block = chain.mineBlock([
+      Tx.contractCall(
+        "community-handles",
+        "name-register",
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          "0x0102030405060708090a",
+          types.principal(account1),
+        ],
+        deployer
+      ),
+      Tx.contractCall(
+        "ST000000000000000000002AMW42H.bns",
+        "name-revoke",
+        ["0x67676767676767676767", "0x6767"],
+        account1
+      ),
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+    block.receipts[1].result.expectOk().expectBool(true);
+  },
+});
+
+Clarinet.test({
   name: "Ensure that deployer can register names in bulk cheaply and bns price is still high",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const deployer = accounts.get("deployer")!.address;
