@@ -20,7 +20,7 @@
           (hash (sha256 (concat (concat (concat name 0x2e) namespace) salt))))
         (asserts! (secp256k1-verify hash approval-signature (var-get approval-pubkey)) err-not-authorized)
         (try! (pay-fees price))
-        (contract-call? .community-handles name-register namespace name salt zonefile-hash owner)))
+        (contract-call? .community-handles name-register namespace name zonefile-hash owner)))
 
 
 (define-private (pay-fees (price uint))
@@ -53,12 +53,12 @@
         (try! (is-contract-owner))
         (ok (var-set contract-owner new-owner))))
 
-;; hand over control of namespace to new owner
+;; hand over control of namespace to new controller
 ;; can only be called by contract owner of this contract
-(define-public (set-new-namespace-owner (new-owner principal))
+(define-public (set-namespace-controller (new-controller principal))
     (begin
         (try! (is-contract-owner))
-        (as-contract (contract-call? .community-handles set-namespace-owner namespace new-owner))))
+        (as-contract (contract-call? .community-handles set-namespace-controller namespace new-controller))))
 
 (define-private (is-contract-owner)
     (ok (asserts! (is-eq tx-sender (var-get contract-owner)) err-not-authorized)))

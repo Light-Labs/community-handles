@@ -11,7 +11,7 @@ import {
   PostConditionMode,
 } from 'micro-stacks/transactions';
 import { fromHexString } from '../lib/strings';
-import { daoNamesContract } from '../lib/constants';
+import { communityHandlesContract } from '../lib/constants';
 
 export const RegisterNameButton = ({
   stxAddress,
@@ -42,14 +42,14 @@ export const RegisterNameButton = ({
   const postConditions: PostCondition[] = [
     makeStandardSTXPostCondition(stxAddress, FungibleConditionCode.LessEqual, 5_000_000),
     makeContractSTXPostCondition(
-      daoNamesContract.address,
-      daoNamesContract.name,
+      communityHandlesContract.address,
+      communityHandlesContract.name,
       FungibleConditionCode.LessEqual,
       1
     ),
     makeContractNonFungiblePostCondition(
-      daoNamesContract.address,
-      daoNamesContract.name,
+      communityHandlesContract.address,
+      communityHandlesContract.name,
       NonFungibleConditionCode.DoesNotOwn,
       createAssetInfo('ST000000000000000000002AMW42H', 'bns', 'names'),
       tupleCV({ namespace: bufferCVFromString(namespace), name: bufferCVFromString(name) })

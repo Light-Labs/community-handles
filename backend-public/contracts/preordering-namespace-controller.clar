@@ -18,13 +18,11 @@
                               (zonefile-hash (buff 20)))
     (let ((name-order (unwrap! (map-get? name-orders name) err-not-found))
             (owner (get owner name-order))
-            (price (get price name-order))
-            (salt 0x00)
-            (hash (hash160 (concat (concat (concat name 0x2e) namespace) salt))))
+            (price (get price name-order)))
         (asserts! (is-eq owner tx-sender) err-not-authorized)
         (try! (pay-fees price))
         (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
-        (try! (as-contract (contract-call? .community-handles name-register namespace name salt zonefile-hash owner)))
+        (try! (as-contract (contract-call? .community-handles name-register namespace name zonefile-hash owner)))
         (ok true)))
 
 (define-private (pay-fees (price uint))
@@ -44,12 +42,12 @@
 (define-private (insert-order (order {owner: principal, name: (buff 48), price: uint}))
     (map-set name-orders (get name order) {owner: (get owner order), price: (get price order)}))
 
-;; hand over control of namespace to new owner
+;; hand over control of namespace to new controller
 ;; can only be called by contract owner of this contract
-(define-public (set-namespace-owner (new-owner principal))
+(define-public (set-namespace-controller (new-controller principal))
     (begin
         (try! (is-contract-owner))
-        (as-contract (contract-call? .community-handles set-namespace-owner namespace new-owner))))
+        (as-contract (contract-call? .community-handles set-namespace-controller namespace new-controller))))
 
 (define-private (is-contract-owner)
     (ok (asserts! (is-eq tx-sender (var-get contract-owner)) err-not-authorized)))
