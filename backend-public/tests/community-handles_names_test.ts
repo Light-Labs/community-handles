@@ -25,7 +25,7 @@ Clarinet.test({
     block.receipts[0].result.expectOk().expectBool(true);
 
     const priceResponse = chain.callReadOnlyFn(
-      "ST000000000000000000002AMW42H.bns",
+      "SP000000000000000000002Q6VF78.bns",
       "get-name-price",
       ["0x67676767676767676767", "0x6767"],
       account1
@@ -57,7 +57,7 @@ Clarinet.test({
         deployer
       ),
       Tx.contractCall(
-        "ST000000000000000000002AMW42H.bns",
+        "SP000000000000000000002Q6VF78.bns",
         "name-renewal",
         [
           "0x67676767676767676767",
@@ -96,7 +96,7 @@ Clarinet.test({
         deployer
       ),
       Tx.contractCall(
-        "ST000000000000000000002AMW42H.bns",
+        "SP000000000000000000002Q6VF78.bns",
         "name-transfer",
         [
           "0x67676767676767676767",
@@ -133,7 +133,7 @@ Clarinet.test({
         deployer
       ),
       Tx.contractCall(
-        "ST000000000000000000002AMW42H.bns",
+        "SP000000000000000000002Q6VF78.bns",
         "name-update",
         ["0x67676767676767676767", "0x6767", "0x0102030405060708090b"],
         account1
@@ -165,7 +165,7 @@ Clarinet.test({
         deployer
       ),
       Tx.contractCall(
-        "ST000000000000000000002AMW42H.bns",
+        "SP000000000000000000002Q6VF78.bns",
         "name-revoke",
         ["0x67676767676767676767", "0x6767"],
         account1
@@ -204,7 +204,7 @@ Clarinet.test({
     block.receipts[0].result.expectOk().expectBool(true);
 
     const priceResponse = chain.callReadOnlyFn(
-      "ST000000000000000000002AMW42H.bns",
+      "SP000000000000000000002Q6VF78.bns",
       "get-name-price",
       ["0x67676767676767676767", "0x6767"],
       account1
@@ -225,7 +225,7 @@ Clarinet.test({
 
     let block = chain.mineBlock([
       Tx.contractCall(
-        "ST000000000000000000002AMW42H.bns",
+        "SP000000000000000000002Q6VF78.bns",
         "name-preorder",
         ["0x8838d9f51c845dfa4aa1c26e677196d6fc3186e9", types.uint(10)],
         account1
@@ -235,7 +235,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall(
-        "ST000000000000000000002AMW42H.bns",
+        "SP000000000000000000002Q6VF78.bns",
         "name-register",
         [
           "0x67676767676767676767",
@@ -261,7 +261,7 @@ Clarinet.test({
     // check price
     const price = 10_000_000_000_000;
     const priceResponse = chain.callReadOnlyFn(
-      "ST000000000000000000002AMW42H.bns",
+      "SP000000000000000000002Q6VF78.bns",
       "get-name-price",
       ["0x67676767676767676767", "0x6767"],
       account1
@@ -272,7 +272,7 @@ Clarinet.test({
 
     let block = chain.mineBlock([
       Tx.contractCall(
-        "ST000000000000000000002AMW42H.bns",
+        "SP000000000000000000002Q6VF78.bns",
         "name-preorder",
         ["0x8838d9f51c845dfa4aa1c26e677196d6fc3186e9", types.uint(price)],
         account1
@@ -283,7 +283,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall(
-        "ST000000000000000000002AMW42H.bns",
+        "SP000000000000000000002Q6VF78.bns",
         "name-register",
         [
           "0x67676767676767676767",
@@ -299,7 +299,7 @@ Clarinet.test({
     block.receipts[0].events.expectNonFungibleTokenMintEvent(
       "{name: 0x6767, namespace: 0x67676767676767676767}",
       account1,
-      "ST000000000000000000002AMW42H.bns",
+      "SP000000000000000000002Q6VF78.bns",
       "names"
     );
     */

@@ -4,7 +4,7 @@
 (define-data-var contract-owner principal tx-sender)
 (define-data-var community-treasury principal tx-sender)
 (define-data-var approval-pubkey (buff 33) 0x00)
-(define-data-var price-in-ustx uint u4999999)
+(define-data-var price-in-ustx uint u9999999)
 
 (define-constant err-not-authorized (err u403))
 

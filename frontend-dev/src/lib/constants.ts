@@ -1,12 +1,12 @@
 // as ascii
 export const namespace = 'hhhhhhhh';
 export const communityHandlesContract = {
-  address: 'ST2Z3FFKYT0MGAGWP8A8NZJZHGWW4Q3VGBSC1NDEB',
-  name: 'neutral-gold-scorpion',
+  address: 'SPC0KWNBJ61BDZRPF3W2GHGK3G3GKS8WZ7ND33PS',
+  name: 'community-handles-v1',
 };
 export const controllerContract = {
-  address: 'ST2Z3FFKYT0MGAGWP8A8NZJZHGWW4Q3VGBSC1NDEB',
-  name: 'beneficial-black-sheep',
+  address: 'SPC0KWNBJ61BDZRPF3W2GHGK3G3GKS8WZ7ND33PS',
+  name: '',
 };
 
 // public key of approver as hex without prefix
