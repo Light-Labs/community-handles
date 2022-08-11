@@ -19,7 +19,6 @@ import { OwnerPubkeyButton } from './components/owner-pubkey-button';
 import { RegisterNameButton } from './components/register-name-button';
 import { NamespaceSetControllerButton } from './components/namespace-set-controller-button';
 import { bufferCVFromString, cvToHex, cvToString, hexToCV } from 'micro-stacks/clarity';
-import { NamespaceSetupAllButton } from './components/namespace-setup-all-button';
 
 function Contents() {
   const { stxAddress } = MicroStacks.useAccount();
@@ -76,8 +75,6 @@ function Contents() {
 
       {stxAddress && (
         <>
-          <p className="read-the-docs">Deploy many namespaces</p>
-          <NamespaceSetupAllButton />
           <p className="read-the-docs">Add the new namespace</p>
           <NamespaceBuyButton
             stxAddress={stxAddress}

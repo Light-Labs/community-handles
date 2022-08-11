@@ -1,13 +1,24 @@
+const mainnet = false;
 // as ascii
 export const namespace = 'hhhhhhhh';
-export const communityHandlesContract = {
-  address: 'SPC0KWNBJ61BDZRPF3W2GHGK3G3GKS8WZ7ND33PS',
-  name: 'community-handles-v1',
-};
-export const controllerContract = {
-  address: 'SPC0KWNBJ61BDZRPF3W2GHGK3G3GKS8WZ7ND33PS',
-  name: '',
-};
+export const communityHandlesContract = mainnet
+  ? {
+      address: 'SPC0KWNBJ61BDZRPF3W2GHGK3G3GKS8WZ7ND33PS',
+      name: 'community-handles-v1',
+    }
+  : {
+      address: 'SPC0KWNBJ61BDZRPF3W2GHGK3G3GKS8WZ7ND33PS',
+      name: 'community-handles-v1',
+    };
+export const controllerContract = mainnet
+  ? {
+      address: 'SPC0KWNBJ61BDZRPF3W2GHGK3G3GKS8WZ7ND33PS',
+      name: '',
+    }
+  : {
+      address: 'SPC0KWNBJ61BDZRPF3W2GHGK3G3GKS8WZ7ND33PS',
+      name: '',
+    };
 
 // public key of approver as hex without prefix
 export const pubkey = '027881a9f9e209b2e22cb1c6eb486d41b142abaacbdd755bfcff41d3e3851c83d5';
