@@ -41,7 +41,7 @@ Clarinet.test({
       Tx.contractCall(
         "community-handles",
         "namespace-reveal",
-        ["0x67676767676767676767", "0xff", types.uint(1000)],
+        ["0x67676767676767676767", "0xff", types.uint(1000), types.none()],
         account1
       ),
     ]);
@@ -51,13 +51,13 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "Ensure that user don't control namespace when called via contract",
+  name: "Ensure that user don't control namespace when called via contract with no controller",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const deployer = accounts.get("deployer")!.address;
     const account1 = accounts.get("wallet_1")!.address;
 
     let block = chain.mineBlock([
-      Tx.contractCall("register-namespace", "do-it", [], deployer),
+      Tx.contractCall("register-namespace", "do-it", [types.none()], deployer),
     ]);
     block.receipts[0].result.expectOk();
 
@@ -67,6 +67,34 @@ Clarinet.test({
       ["0x67676767676767676767"],
       account1
     );
-    response.result.expectSome().expectPrincipal(`${deployer}.register-namespace`);
+    response.result
+      .expectSome()
+      .expectPrincipal(`${deployer}.register-namespace`);
+  },
+});
+
+Clarinet.test({
+  name: "Ensure that user does control namespace when called via contract and user as controller",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get("deployer")!.address;
+    const account1 = accounts.get("wallet_1")!.address;
+
+    let block = chain.mineBlock([
+      Tx.contractCall(
+        "register-namespace",
+        "do-it",
+        [types.some(types.principal(deployer))],
+        deployer
+      ),
+    ]);
+    block.receipts[0].result.expectOk();
+
+    const response = chain.callReadOnlyFn(
+      "community-handles",
+      "get-namespace-controller",
+      ["0x67676767676767676767"],
+      account1
+    );
+    response.result.expectSome().expectPrincipal(deployer);
   },
 });

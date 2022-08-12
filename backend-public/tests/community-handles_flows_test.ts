@@ -64,7 +64,6 @@ Clarinet.test({
         account2
       ),
     ]);
-    console.log(block.receipts);
     block.receipts[0].result.expectOk().expectBool(true);
     block.receipts[1].result.expectOk().expectBool(true);
     block.receipts[2].result.expectOk().expectBool(true);

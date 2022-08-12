@@ -1,4 +1,11 @@
-import { BufferCV, bufferCVFromString, ClarityValue, uintCV, UIntCV } from 'micro-stacks/clarity';
+import {
+  BufferCV,
+  bufferCVFromString,
+  ClarityValue,
+  noneCV,
+  uintCV,
+  UIntCV,
+} from 'micro-stacks/clarity';
 import { useAuth, useOpenContractCall } from '@micro-stacks/react';
 import { FungibleConditionCode, makeStandardSTXPostCondition } from 'micro-stacks/transactions';
 import { namesApi, network } from '../lib/stacksApi';
@@ -23,6 +30,7 @@ export const NamespaceRevealButton = ({
     bufferCVFromString(namespace),
     bufferCVFromString(salt),
     uintCV(100),
+    noneCV(),
   ];
 
   const postConditions = [

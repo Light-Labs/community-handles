@@ -18,7 +18,7 @@ export function setupNamespace(chain: Chain, deployer: string) {
     Tx.contractCall(
       "community-handles",
       "namespace-reveal",
-      ["0x67676767676767676767", "0x00", types.uint(1000)],
+      ["0x67676767676767676767", "0x00", types.uint(1000), types.none()],
       deployer
     ),
   ]);

@@ -24,6 +24,17 @@ Clarinet.test({
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
 
+    const ownerResponse = chain.callReadOnlyFn(
+      "SP000000000000000000002Q6VF78.bns",
+      "name-resolve",
+      ["0x67676767676767676767", "0x6767"],
+      account1
+    );
+    ownerResponse.result
+      .expectOk()
+      .expectTuple()
+      ["owner"].expectPrincipal(account1);
+
     const priceResponse = chain.callReadOnlyFn(
       "SP000000000000000000002Q6VF78.bns",
       "get-name-price",
