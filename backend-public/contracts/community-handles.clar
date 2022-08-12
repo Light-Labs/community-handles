@@ -56,6 +56,19 @@
         (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace internal-price-high u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1))))        
         (ok true)))
 
+
+(define-public (name-renewal (namespace (buff 20))
+                             (name (buff 48))
+                             (stx-to-burn uint)
+                             (new-owner (optional principal))
+                             (zonefile-hash (optional (buff 20))))
+    (begin
+        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u1 u1))))
+        (try! (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-renewal namespace name stx-to-burn new-owner zonefile-hash)))
+        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace internal-price-high u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1))))
+        (ok true)))
+
+
 ;; iterator for bulk-name-register
 (define-private (bulk-name-register-iter (entry {name: (buff 48), owner: principal, zonefile-hash: (buff 20)}) (prev (response bool uint)))
     (let ((namespace (var-get ctx-bulk-registration-namespace))

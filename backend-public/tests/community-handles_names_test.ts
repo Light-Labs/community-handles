@@ -47,8 +47,48 @@ Clarinet.test({
   },
 });
 
+
 Clarinet.test({
-  name: "Ensure that owner can renew name",
+  name: "Ensure that owner can renew name cheaply",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get("deployer")!.address;
+    const account1 = accounts.get("wallet_1")!.address;
+
+    setupNamespace(chain, deployer);
+
+    let block = chain.mineBlock([
+      Tx.contractCall(
+        "community-handles",
+        "name-register",
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          "0x0102030405060708090a",
+          types.principal(account1),
+        ],
+        deployer
+      ),
+      Tx.contractCall(
+        "community-handles",
+        "name-renewal",
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          types.uint(9999999),
+          types.none(),
+          types.none(),
+        ],
+        account1
+      ),
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+    block.receipts[1].result.expectOk().expectBool(true);
+  },
+});
+
+
+Clarinet.test({
+  name: "Ensure that owner can renew name pricely via bns",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const deployer = accounts.get("deployer")!.address;
     const account1 = accounts.get("wallet_1")!.address;
