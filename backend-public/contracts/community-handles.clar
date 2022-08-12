@@ -62,9 +62,13 @@
                              (stx-to-burn uint)
                              (new-owner (optional principal))
                              (zonefile-hash (optional (buff 20))))
-    (begin
+    (let ((original-owner tx-sender))
+        (try! (is-contract-caller-namespace-controller namespace))
+        (try! (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-transfer namespace name (as-contract tx-sender) zonefile-hash)))
+        (try! (stx-transfer? u1 original-owner (as-contract tx-sender)))
         (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u1 u1))))
-        (try! (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-renewal namespace name stx-to-burn new-owner zonefile-hash)))
+        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-renewal namespace name stx-to-burn new-owner zonefile-hash))))
+        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-transfer namespace name (default-to original-owner new-owner) zonefile-hash))))
         (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace internal-price-high u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1))))
         (ok true)))
 

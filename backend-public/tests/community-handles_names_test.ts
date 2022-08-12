@@ -47,9 +47,8 @@ Clarinet.test({
   },
 });
 
-
 Clarinet.test({
-  name: "Ensure that owner can renew name cheaply",
+  name: "Ensure that controller can't renew not-owned name cheaply",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const deployer = accounts.get("deployer")!.address;
     const account1 = accounts.get("wallet_1")!.address;
@@ -74,21 +73,117 @@ Clarinet.test({
         [
           "0x67676767676767676767",
           "0x6767",
-          types.uint(9999999),
+          types.uint(1),
           types.none(),
           types.none(),
         ],
-        account1
+        deployer // namespace controller not owning the name
       ),
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
-    block.receipts[1].result.expectOk().expectBool(true);
+    block.receipts[1].result.expectErr().expectUint(2006); // not authorized operation
   },
 });
 
+Clarinet.test({
+  name: "Ensure that owner can't renew owned name",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get("deployer")!.address;
+    const account1 = accounts.get("wallet_1")!.address;
+
+    setupNamespace(chain, deployer);
+
+    let block = chain.mineBlock([
+      Tx.contractCall(
+        "community-handles",
+        "name-register",
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          "0x0102030405060708090a",
+          types.principal(account1),
+        ],
+        deployer
+      ),
+      Tx.contractCall(
+        "community-handles",
+        "name-renewal",
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          types.uint(1),
+          types.none(),
+          types.none(),
+        ],
+        account1 // name owner
+      ),
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+    block.receipts[1].result.expectErr().expectUint(403); // not authorized operation
+  },
+});
 
 Clarinet.test({
-  name: "Ensure that owner can renew name pricely via bns",
+  name: "Ensure that another user can re-register owned name after expiry before end of grace period",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get("deployer")!.address;
+    const account1 = accounts.get("wallet_1")!.address;
+    const account2 = accounts.get("wallet_1")!.address;
+
+    setupNamespace(chain, deployer);
+
+    let block = chain.mineBlock([
+      Tx.contractCall(
+        "community-handles",
+        "name-register",
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          "0x0102030405060708090a",
+          types.principal(account1),
+        ],
+        deployer
+      ),
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+
+    chain.mineEmptyBlock(999);
+
+    block = chain.mineBlock([
+      Tx.contractCall(
+        "community-handles",
+        "name-register",
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          "0x0102030405060708090a",
+          types.principal(account2),
+        ],
+        deployer
+      ),
+    ]);
+    block.receipts[0].result.expectErr().expectUint(2004); // name unavailable
+
+    block = chain.mineBlock([
+      Tx.contractCall(
+        "community-handles",
+        "name-register",
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          "0x0102030405060708090a",
+          types.principal(account2),
+        ],
+        deployer
+      ),
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+
+  },
+});
+
+Clarinet.test({
+  name: "Ensure that owner can renew name pricely via bns (without paying the fees due to bug in stacks 2.0)",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const deployer = accounts.get("deployer")!.address;
     const account1 = accounts.get("wallet_1")!.address;

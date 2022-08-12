@@ -24,6 +24,22 @@
         (ok true)))
 
 
+;; renew a name
+;; @event: tx-sender sends 1 stx
+;; @event: community-handles burns 1 stx
+;; @event: community-handles sends name nft to tx-sender
+(define-public (name-renewal (name (buff 48))
+                              (approval-signature (buff 65))
+                              (new-owner (optional principal))
+                              (zonefile-hash (optional (buff 20))))
+    (let ((price (var-get price-in-ustx))
+          (owner tx-sender)
+          (hash (sha256 (concat (concat (concat name 0x2e) namespace) name-salt))))
+        (asserts! (secp256k1-verify hash approval-signature (var-get approval-pubkey)) err-not-authorized)
+        (try! (pay-fees price))
+        (try! (contract-call? .community-handles name-renewal namespace name u1 new-owner zonefile-hash))
+        (ok true)))
+
 (define-private (pay-fees (price uint))
     (let ((amount-ohf (/ (* price u70) u100))
           (amount-community (- price amount-ohf)))
