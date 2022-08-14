@@ -13,23 +13,16 @@ Clarinet.test({
       Tx.contractCall(
         "community-handles",
         "name-register",
-        ["0x67676767676767676767", "0x6767", "0x0102030405060708090a"],
-        deployer
-      ),
-      Tx.contractCall(
-        "SP000000000000000000002Q6VF78.bns",
-        "name-transfer",
         [
           "0x67676767676767676767",
           "0x6767",
           types.principal(account1),
-          types.some("0x0102030405060708090a"),
+          "0x0102030405060708090a",
         ],
         deployer
       ),
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
-    block.receipts[1].result.expectOk().expectBool(true);
 
     // check name owner
     const ownerResponse = chain.callReadOnlyFn(
@@ -68,20 +61,15 @@ Clarinet.test({
       Tx.contractCall(
         "community-handles",
         "name-register",
-        ["0x67676767676767676767", "0x6767", "0x0102030405060708090a"],
-        deployer
-      ),
-      Tx.contractCall(
-        "SP000000000000000000002Q6VF78.bns",
-        "name-transfer",
         [
           "0x67676767676767676767",
           "0x6767",
           types.principal(account1),
-          types.some("0x0102030405060708090a"),
+          "0x0102030405060708090a",
         ],
         deployer
       ),
+
       Tx.contractCall(
         "community-handles",
         "name-renewal",
@@ -96,8 +84,7 @@ Clarinet.test({
       ),
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
-    block.receipts[1].result.expectOk().expectBool(true);
-    block.receipts[2].result.expectErr().expectUint(2006); // not authorized operation
+    block.receipts[1].result.expectErr().expectUint(2006); // not authorized operation
   },
 });
 
@@ -113,20 +100,15 @@ Clarinet.test({
       Tx.contractCall(
         "community-handles",
         "name-register",
-        ["0x67676767676767676767", "0x6767", "0x0102030405060708090a"],
-        deployer
-      ),
-      Tx.contractCall(
-        "SP000000000000000000002Q6VF78.bns",
-        "name-transfer",
         [
           "0x67676767676767676767",
           "0x6767",
           types.principal(account1),
-          types.some("0x0102030405060708090a"),
+          "0x0102030405060708090a",
         ],
         deployer
       ),
+
       Tx.contractCall(
         "community-handles",
         "name-renewal",
@@ -141,8 +123,7 @@ Clarinet.test({
       ),
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
-    block.receipts[1].result.expectOk().expectBool(true);
-    block.receipts[2].result.expectErr().expectUint(403); // not authorized operation
+    block.receipts[1].result.expectErr().expectUint(403); // not authorized operation
   },
 });
 
@@ -159,23 +140,16 @@ Clarinet.test({
       Tx.contractCall(
         "community-handles",
         "name-register",
-        ["0x67676767676767676767", "0x6767", "0x0102030405060708090a"],
-        deployer
-      ),
-      Tx.contractCall(
-        "SP000000000000000000002Q6VF78.bns",
-        "name-transfer",
         [
           "0x67676767676767676767",
           "0x6767",
           types.principal(account1),
-          types.some("0x0102030405060708090a"),
+          "0x0102030405060708090a",
         ],
         deployer
       ),
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
-    block.receipts[1].result.expectOk().expectBool(true);
 
     chain.mineEmptyBlock(999);
 
@@ -183,7 +157,12 @@ Clarinet.test({
       Tx.contractCall(
         "community-handles",
         "name-register",
-        ["0x67676767676767676767", "0x6767", "0x0102030405060708090a"],
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          types.principal(account2),
+          "0x0102030405060708090a",
+        ],
         deployer
       ),
     ]);
@@ -193,7 +172,12 @@ Clarinet.test({
       Tx.contractCall(
         "community-handles",
         "name-register",
-        ["0x67676767676767676767", "0x6767", "0x0102030405060708090a"],
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          types.principal(account2),
+          "0x0102030405060708090a",
+        ],
         deployer
       ),
     ]);
@@ -213,20 +197,15 @@ Clarinet.test({
       Tx.contractCall(
         "community-handles",
         "name-register",
-        ["0x67676767676767676767", "0x6767", "0x0102030405060708090a"],
-        deployer
-      ),
-      Tx.contractCall(
-        "SP000000000000000000002Q6VF78.bns",
-        "name-transfer",
         [
           "0x67676767676767676767",
           "0x6767",
           types.principal(account1),
-          types.some("0x0102030405060708090a"),
+          "0x0102030405060708090a",
         ],
         deployer
       ),
+
       Tx.contractCall(
         "SP000000000000000000002Q6VF78.bns",
         "name-renewal",
@@ -242,7 +221,6 @@ Clarinet.test({
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
     block.receipts[1].result.expectOk().expectBool(true);
-    block.receipts[2].result.expectOk().expectBool(true);
   },
 });
 
@@ -259,20 +237,10 @@ Clarinet.test({
       Tx.contractCall(
         "community-handles",
         "name-register",
-        ["0x67676767676767676767", "0x6767", "0x0102030405060708090a"],
+        ["0x67676767676767676767", "0x6767", types.principal(account1),"0x0102030405060708090a"],
         deployer
       ),
-      Tx.contractCall(
-        "SP000000000000000000002Q6VF78.bns",
-        "name-transfer",
-        [
-          "0x67676767676767676767",
-          "0x6767",
-          types.principal(account1),
-          types.some("0x0102030405060708090a"),
-        ],
-        deployer
-      ),
+     
       Tx.contractCall(
         "SP000000000000000000002Q6VF78.bns",
         "name-transfer",
@@ -287,7 +255,6 @@ Clarinet.test({
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
     block.receipts[1].result.expectOk().expectBool(true);
-    block.receipts[2].result.expectOk().expectBool(true);
   },
 });
 
@@ -303,18 +270,7 @@ Clarinet.test({
       Tx.contractCall(
         "community-handles",
         "name-register",
-        ["0x67676767676767676767", "0x6767", "0x0102030405060708090a"],
-        deployer
-      ),
-      Tx.contractCall(
-        "SP000000000000000000002Q6VF78.bns",
-        "name-transfer",
-        [
-          "0x67676767676767676767",
-          "0x6767",
-          types.principal(account1),
-          types.some("0x0102030405060708090a"),
-        ],
+        ["0x67676767676767676767", "0x6767", types.principal(account1), "0x0102030405060708090a"],
         deployer
       ),
       Tx.contractCall(
@@ -326,7 +282,6 @@ Clarinet.test({
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
     block.receipts[1].result.expectOk().expectBool(true);
-    block.receipts[2].result.expectOk().expectBool(true);
   },
 });
 
@@ -342,20 +297,10 @@ Clarinet.test({
       Tx.contractCall(
         "community-handles",
         "name-register",
-        ["0x67676767676767676767", "0x6767", "0x0102030405060708090a"],
+        ["0x67676767676767676767", "0x6767", types.principal(account1),"0x0102030405060708090a"],
         deployer
       ),
-      Tx.contractCall(
-        "SP000000000000000000002Q6VF78.bns",
-        "name-transfer",
-        [
-          "0x67676767676767676767",
-          "0x6767",
-          types.principal(account1),
-          types.some("0x0102030405060708090a"),
-        ],
-        deployer
-      ),
+     
       Tx.contractCall(
         "SP000000000000000000002Q6VF78.bns",
         "name-revoke",
@@ -365,7 +310,51 @@ Clarinet.test({
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
     block.receipts[1].result.expectOk().expectBool(true);
-    block.receipts[2].result.expectOk().expectBool(true);
+  },
+});
+
+Clarinet.test({
+  name: "Ensure that controller can register names in bulk cheaply and bns price is still high",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get("deployer")!.address;
+    const account1 = accounts.get("wallet_1")!.address;
+    const account2 = accounts.get("wallet_2")!.address;
+
+    setupNamespace(chain, deployer);
+
+    let block = chain.mineBlock([
+      Tx.contractCall(
+        "community-handles",
+        "bulk-name-register",
+        [
+          "0x67676767676767676767",
+          types.list([
+            types.tuple({
+              name: "0x6767",
+              "zonefile-hash": "0x0102030405060708090a",
+              owner: types.principal(account1),
+            }),
+            types.tuple({
+              name: "0x6868",
+              "zonefile-hash": "0x0102030405060708090b",
+              owner: types.principal(account2),
+            }),
+          ]),
+        ],
+        deployer
+      ),
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+
+    const priceResponse = chain.callReadOnlyFn(
+      "SP000000000000000000002Q6VF78.bns",
+      "get-name-price",
+      ["0x67676767676767676767", "0x6767"],
+      account1
+    );
+    priceResponse.result
+      .expectOk()
+      .expectUint(9999999999999999999999999999990n);
   },
 });
 

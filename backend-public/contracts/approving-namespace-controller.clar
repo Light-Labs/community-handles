@@ -21,8 +21,7 @@
         (asserts! (secp256k1-verify hash approval-signature (var-get approval-pubkey)) err-not-authorized)
         (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
         (try! (pay-fees price))
-        (try! (as-contract (contract-call? .community-handles name-register namespace name zonefile-hash)))
-        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-transfer namespace name owner (some zonefile-hash)))))
+        (try! (as-contract (contract-call? .community-handles name-register namespace name owner zonefile-hash)))
         (ok true)))
 
 
