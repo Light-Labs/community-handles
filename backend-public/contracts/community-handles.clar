@@ -38,6 +38,16 @@
                                 namespace-ready namespace)))
         (ok true)))
 
+(define-public (namespace-revoke-function-price-edition (namespace (buff 20)))
+    (begin
+        (try! (is-contract-caller-namespace-controller namespace))
+        (try! (ft-mint? danger-zone-token u1 tx-sender))
+        (try! (ft-burn? danger-zone-token u1 tx-sender))
+        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns
+                                namespace-revoke-function-price-edition namespace))))
+        (ok true)))
+
+
 ;; @desc register name for 1 ustx by namespace controller only
 ;; @param namespace; controlled namespace
 ;; @param name; name in the controlled namespace

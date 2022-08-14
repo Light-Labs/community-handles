@@ -237,10 +237,15 @@ Clarinet.test({
       Tx.contractCall(
         "community-handles",
         "name-register",
-        ["0x67676767676767676767", "0x6767", types.principal(account1),"0x0102030405060708090a"],
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          types.principal(account1),
+          "0x0102030405060708090a",
+        ],
         deployer
       ),
-     
+
       Tx.contractCall(
         "SP000000000000000000002Q6VF78.bns",
         "name-transfer",
@@ -270,7 +275,12 @@ Clarinet.test({
       Tx.contractCall(
         "community-handles",
         "name-register",
-        ["0x67676767676767676767", "0x6767", types.principal(account1), "0x0102030405060708090a"],
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          types.principal(account1),
+          "0x0102030405060708090a",
+        ],
         deployer
       ),
       Tx.contractCall(
@@ -297,10 +307,15 @@ Clarinet.test({
       Tx.contractCall(
         "community-handles",
         "name-register",
-        ["0x67676767676767676767", "0x6767", types.principal(account1),"0x0102030405060708090a"],
+        [
+          "0x67676767676767676767",
+          "0x6767",
+          types.principal(account1),
+          "0x0102030405060708090a",
+        ],
         deployer
       ),
-     
+
       Tx.contractCall(
         "SP000000000000000000002Q6VF78.bns",
         "name-revoke",
