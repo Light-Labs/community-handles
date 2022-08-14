@@ -14,7 +14,10 @@ Clarinet.test({
       Tx.contractCall(
         "community-handles",
         "set-namespace-controller",
-        ["0x67676767676767676767", `'${deployer}.approving-namespace-controller`],
+        [
+          "0x67676767676767676767",
+          `'${deployer}.approving-namespace-controller`,
+        ],
         deployer
       ),
     ]);

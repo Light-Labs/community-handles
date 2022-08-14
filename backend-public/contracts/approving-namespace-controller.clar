@@ -19,8 +19,10 @@
           (owner tx-sender)
           (hash (sha256 (concat (concat (concat name 0x2e) namespace) name-salt))))
         (asserts! (secp256k1-verify hash approval-signature (var-get approval-pubkey)) err-not-authorized)
+        (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
         (try! (pay-fees price))
-        (try! (contract-call? .community-handles name-register namespace name zonefile-hash owner))
+        (try! (as-contract (contract-call? .community-handles name-register namespace name zonefile-hash)))
+        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-transfer namespace name owner (some zonefile-hash)))))
         (ok true)))
 
 
@@ -90,3 +92,10 @@
 
 (define-read-only (get-contract-owner)
     (var-get contract-owner))
+
+;; convert response to standard bool response with uint error
+;; (response bool int) (response bool uint)
+(define-private (to-bool-response (value (response bool int)))
+    (match value
+        success (ok success)
+        error (err (to-uint error))))

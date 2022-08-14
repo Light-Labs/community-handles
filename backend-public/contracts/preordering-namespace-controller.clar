@@ -22,7 +22,8 @@
         (asserts! (is-eq owner tx-sender) err-not-authorized)
         (try! (pay-fees price))
         (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
-        (try! (as-contract (contract-call? .community-handles name-register namespace name zonefile-hash owner)))
+        (try! (as-contract (contract-call? .community-handles name-register namespace name zonefile-hash)))
+        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-transfer namespace name owner (some zonefile-hash)))))
         (ok true)))
 
 (define-private (pay-fees (price uint))
