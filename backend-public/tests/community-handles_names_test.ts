@@ -370,45 +370,6 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "Ensure that controller can register names in bulk cheaply and bns price is still high",
-  async fn(chain: Chain, accounts: Map<string, Account>) {
-    const deployer = accounts.get("deployer")!.address;
-    const account1 = accounts.get("wallet_1")!.address;
-
-    setupNamespace(chain, deployer);
-
-    let block = chain.mineBlock([
-      Tx.contractCall(
-        "community-handles",
-        "bulk-name-register",
-        [
-          "0x67676767676767676767",
-          types.list([
-            types.tuple({
-              name: "0x6767",
-              "zonefile-hash": "0x0102030405060708090a",
-              owner: types.principal(account1),
-            }),
-          ]),
-        ],
-        deployer
-      ),
-    ]);
-    block.receipts[0].result.expectOk().expectBool(true);
-
-    const priceResponse = chain.callReadOnlyFn(
-      "SP000000000000000000002Q6VF78.bns",
-      "get-name-price",
-      ["0x67676767676767676767", "0x6767"],
-      account1
-    );
-    priceResponse.result
-      .expectOk()
-      .expectUint(9999999999999999999999999999990n);
-  },
-});
-
-Clarinet.test({
   name: "Ensure that user can't register name via bns cheaply",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const deployer = accounts.get("deployer")!.address;

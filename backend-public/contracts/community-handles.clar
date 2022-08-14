@@ -67,30 +67,6 @@
         (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace internal-price-high u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1))))
         (ok true)))
 
-
-;; iterator for bulk-name-register
-(define-private (bulk-name-register-iter (entry {name: (buff 48), owner: principal, zonefile-hash: (buff 20)}) (prev (response bool uint)))
-    (let ((namespace (var-get ctx-bulk-registration-namespace))
-          (name (get name entry))
-          (hash (hash160 (concat (concat (concat name 0x2e) namespace) name-salt))))
-        (try! prev)
-        (try! (to-uint-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-preorder hash u1)))
-        (try! (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-register namespace name name-salt (get zonefile-hash entry))))
-        (ok true)))
-
-;; @desc register multiple namens for 1 ustx by namespace controller only
-;; @param namespace; controlled namespace
-;; @param names; list of names with owner and hash of the attachment/zonefile for the name
-(define-public (bulk-name-register (namespace (buff 20)) (names (list 1000 {name: (buff 48), owner: principal, zonefile-hash: (buff 20)})))
-    (begin
-        (try! (is-contract-caller-namespace-controller namespace))
-        (var-set ctx-bulk-registration-namespace namespace)
-        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u1 u1))))
-        (try! (fold bulk-name-register-iter names (ok true)))
-        (var-set ctx-bulk-registration-namespace 0x00)
-        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace internal-price-high u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1))))
-        (ok true)))
-
 ;; convert response to standard uint response with uint error
 ;; (response uint int) (response uint uint)
 (define-private (to-uint-response (value (response uint int)))
