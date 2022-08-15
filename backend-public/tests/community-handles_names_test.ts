@@ -2,11 +2,11 @@ import { Clarinet, Tx, Chain, Account, types, assertEquals } from "./deps.ts";
 import { setupNamespace } from "./utils.ts";
 
 Clarinet.test({
-  name: "Ensure that deployer can register name cheaply and bns price is still high",
+  name: "Ensure that controller can register name cheaply and bns price is still high",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const deployer = accounts.get("deployer")!.address;
     const account1 = accounts.get("wallet_1")!.address;
-
+    const anyAccount = accounts.get("wallet_2")!.address;
     setupNamespace(chain, deployer);
 
     let block = chain.mineBlock([
@@ -16,25 +16,27 @@ Clarinet.test({
         [
           "0x67676767676767676767",
           "0x6767",
-          "0x0102030405060708090a",
           types.principal(account1),
+          "0x0102030405060708090a",
         ],
         deployer
       ),
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
 
+    // check name owner
     const ownerResponse = chain.callReadOnlyFn(
       "SP000000000000000000002Q6VF78.bns",
       "name-resolve",
       ["0x67676767676767676767", "0x6767"],
-      account1
+      anyAccount
     );
     ownerResponse.result
       .expectOk()
       .expectTuple()
       ["owner"].expectPrincipal(account1);
 
+    // check bns price
     const priceResponse = chain.callReadOnlyFn(
       "SP000000000000000000002Q6VF78.bns",
       "get-name-price",
@@ -62,11 +64,12 @@ Clarinet.test({
         [
           "0x67676767676767676767",
           "0x6767",
-          "0x0102030405060708090a",
           types.principal(account1),
+          "0x0102030405060708090a",
         ],
         deployer
       ),
+
       Tx.contractCall(
         "community-handles",
         "name-renewal",
@@ -100,11 +103,12 @@ Clarinet.test({
         [
           "0x67676767676767676767",
           "0x6767",
-          "0x0102030405060708090a",
           types.principal(account1),
+          "0x0102030405060708090a",
         ],
         deployer
       ),
+
       Tx.contractCall(
         "community-handles",
         "name-renewal",
@@ -139,8 +143,8 @@ Clarinet.test({
         [
           "0x67676767676767676767",
           "0x6767",
-          "0x0102030405060708090a",
           types.principal(account1),
+          "0x0102030405060708090a",
         ],
         deployer
       ),
@@ -156,8 +160,8 @@ Clarinet.test({
         [
           "0x67676767676767676767",
           "0x6767",
-          "0x0102030405060708090a",
           types.principal(account2),
+          "0x0102030405060708090a",
         ],
         deployer
       ),
@@ -171,14 +175,13 @@ Clarinet.test({
         [
           "0x67676767676767676767",
           "0x6767",
-          "0x0102030405060708090a",
           types.principal(account2),
+          "0x0102030405060708090a",
         ],
         deployer
       ),
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
-
   },
 });
 
@@ -197,11 +200,12 @@ Clarinet.test({
         [
           "0x67676767676767676767",
           "0x6767",
-          "0x0102030405060708090a",
           types.principal(account1),
+          "0x0102030405060708090a",
         ],
         deployer
       ),
+
       Tx.contractCall(
         "SP000000000000000000002Q6VF78.bns",
         "name-renewal",
@@ -236,11 +240,28 @@ Clarinet.test({
         [
           "0x67676767676767676767",
           "0x6767",
-          "0x0102030405060708090a",
           types.principal(account1),
+          "0x0102030405060708090a",
         ],
         deployer
       ),
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+
+    // check current name owner
+    let ownerResponse = chain.callReadOnlyFn(
+      "SP000000000000000000002Q6VF78.bns",
+      "name-resolve",
+      ["0x67676767676767676767", "0x6767"],
+      account2
+    );
+    let nameData = ownerResponse.result.expectOk().expectTuple();
+    nameData["owner"].expectPrincipal(account1);
+    nameData["lease-ending-at"].expectSome().expectUint(1002);
+
+    chain.mineEmptyBlock(800); // lifetime is 1000
+
+    block = chain.mineBlock([
       Tx.contractCall(
         "SP000000000000000000002Q6VF78.bns",
         "name-transfer",
@@ -254,7 +275,18 @@ Clarinet.test({
       ),
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
-    block.receipts[1].result.expectOk().expectBool(true);
+
+    // check new name owner
+    ownerResponse = chain.callReadOnlyFn(
+      "SP000000000000000000002Q6VF78.bns",
+      "name-resolve",
+      ["0x67676767676767676767", "0x6767"],
+      account2
+    );
+    nameData = ownerResponse.result.expectOk().expectTuple();
+    nameData["owner"].expectPrincipal(account2);
+    nameData["lease-ending-at"].expectSome().expectUint(1002); // lease does not change on transfer
+    nameData["zonefile-hash"].expectBuff(new Uint8Array([])); // no zonefile hash was set during transfer
   },
 });
 
@@ -273,8 +305,8 @@ Clarinet.test({
         [
           "0x67676767676767676767",
           "0x6767",
-          "0x0102030405060708090a",
           types.principal(account1),
+          "0x0102030405060708090a",
         ],
         deployer
       ),
@@ -305,11 +337,12 @@ Clarinet.test({
         [
           "0x67676767676767676767",
           "0x6767",
-          "0x0102030405060708090a",
           types.principal(account1),
+          "0x0102030405060708090a",
         ],
         deployer
       ),
+
       Tx.contractCall(
         "SP000000000000000000002Q6VF78.bns",
         "name-revoke",
@@ -323,10 +356,11 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "Ensure that deployer can register names in bulk cheaply and bns price is still high",
+  name: "Ensure that controller can register names in bulk cheaply and bns price is still high",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const deployer = accounts.get("deployer")!.address;
     const account1 = accounts.get("wallet_1")!.address;
+    const account2 = accounts.get("wallet_2")!.address;
 
     setupNamespace(chain, deployer);
 
@@ -341,6 +375,11 @@ Clarinet.test({
               name: "0x6767",
               "zonefile-hash": "0x0102030405060708090a",
               owner: types.principal(account1),
+            }),
+            types.tuple({
+              name: "0x6868",
+              "zonefile-hash": "0x0102030405060708090b",
+              owner: types.principal(account2),
             }),
           ]),
         ],
