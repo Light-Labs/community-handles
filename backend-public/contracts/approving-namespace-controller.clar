@@ -8,6 +8,7 @@
 (define-constant err-not-authorized (err u403))
 (define-constant err-not-found (err u404))
 (define-constant err-max-renewal-reached (err u500))
+(define-constant err-signature-already-used (err u501))
 
 (define-constant err-name-already-claimed (err u2011))
 (define-constant err-name-claimability-expired (err u2012))
@@ -20,9 +21,10 @@
   { hashed-salted-fqn: (buff 20), buyer: principal }
   { created-at: uint, claimed: bool })
 
-(define-map renewal-salts
-    (buff 48) (buff 100))
+(define-map renewal-signatures (buff 65) (buff 48))
 
+;; preorder a name by registering a hash of the salted name
+;; tx-sender has to pay registration fees here
 (define-public (name-preorder (hashed-salted-fqn (buff 20)))
   (let ((price (var-get price-in-ustx))
         (former-preorder
@@ -74,20 +76,25 @@
 
 
 ;; renew a name
-;; @event: tx-sender sends 1 stx
-;; @event: community-handles burns 1 stx
-;; @event: community-handles sends name nft to tx-sender
+;; a new signature is required for each renewal
+;; @param name; the name to renew
+;; @param salt; the salt used by the approver
+;; @param approval-signature; signed hash by the approver
+;; @param new-owner;
+;; @param zonefile-hash;
 (define-public (name-renewal (name (buff 48))
-                              (approval-signature (buff 65))
-                              (new-owner (optional principal))
-                              (zonefile-hash (optional (buff 20))))
+                             (salt (buff 20))
+                             (approval-signature (buff 65))
+                             (new-owner (optional principal))
+                             (zonefile-hash (optional (buff 20))))
     (let ((price (var-get price-in-ustx))
           (owner tx-sender)
-          (last-salt (unwrap! (map-get? renewal-salts name) err-not-found))
-          (salt (unwrap! (as-max-len? (concat last-salt 0x00) u100) err-max-renewal-reached))
           (hash (sha256 (concat (concat (concat name 0x2e) namespace) salt))))
+        ;; signature must be correct
         (asserts! (secp256k1-verify hash approval-signature (var-get approval-pubkey)) err-not-authorized)
-        (map-set renewal-salts name salt)
+        ;; signature must be unused
+        (asserts! (is-none (map-get? renewal-signatures approval-signature)) err-signature-already-used) 
+        (map-set renewal-signatures approval-signature name)
         (try! (pay-fees price))
         (try! (contract-call? .community-handles name-renewal namespace name u1 new-owner zonefile-hash))
         (ok true)))
