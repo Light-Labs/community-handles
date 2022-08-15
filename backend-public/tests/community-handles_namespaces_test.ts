@@ -74,6 +74,32 @@ Clarinet.test({
 });
 
 Clarinet.test({
+  name: "Ensure that user does control namespace when called via contract with user as controller",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get("deployer")!.address;
+    const account1 = accounts.get("wallet_1")!.address;
+
+    let block = chain.mineBlock([
+      Tx.contractCall(
+        "register-namespace",
+        "do-it",
+        [types.some(types.principal(account1))],
+        deployer
+      ),
+    ]);
+    block.receipts[0].result.expectOk();
+
+    const response = chain.callReadOnlyFn(
+      "community-handles",
+      "get-namespace-controller",
+      ["0x67676767676767676767"],
+      account1
+    );
+    response.result.expectSome().expectPrincipal(account1);
+  },
+});
+
+Clarinet.test({
   name: "Ensure that user does control namespace when called via contract and user as controller",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const deployer = accounts.get("deployer")!.address;
@@ -122,7 +148,7 @@ Clarinet.test({
       ),
 
       Tx.contractCall(
-        "SP000000000000000000002Q6VF78.bns",
+        "ST000000000000000000002AMW42H.bns",
         "namespace-revoke-function-price-edition",
         ["0x67676767676767676767"],
         deployer
@@ -150,13 +176,15 @@ Clarinet.test({
 
     // register name
     block.receipts[0].result.expectOk().expectBool(true);
-    // try to block price function editing
+    // try to block price function editing via bns
     block.receipts[1].result
       .expectErr()
       // unauthorized because owned by contract
       .expectInt(1011);
-    // do block price function editing
+
+    // do block price function editing via community handles
     block.receipts[2].result.expectOk().expectBool(true);
+
     // try to register a name for another user
     block.receipts[3].result
       .expectErr()
