@@ -7,35 +7,38 @@ import {
   UIntCV,
 } from 'micro-stacks/clarity';
 import { useAuth, useOpenContractCall } from '@micro-stacks/react';
-import { FungibleConditionCode, makeStandardSTXPostCondition } from 'micro-stacks/transactions';
+import {
+  FungibleConditionCode,
+  makeStandardSTXPostCondition,
+  PostCondition,
+} from 'micro-stacks/transactions';
 import { namesApi, network } from '../lib/stacksApi';
+import { lifetime } from '../lib/constants';
 
 export const NamespaceRevealButton = ({
   stxAddress,
-  namespaceContract,
+  communityHandlesContract,
   namespace,
   salt,
 }: {
   stxAddress: string;
-  namespaceContract: { address: string; name: string };
+  communityHandlesContract: { address: string; name: string };
   namespace: string;
   salt: string;
 }) => {
   const { openContractCall } = useOpenContractCall();
   const label = `Reveal namespace .${namespace}`;
-  const contractAddress = namespaceContract.address;
-  const contractName = namespaceContract.name;
+  const contractAddress = communityHandlesContract.address;
+  const contractName = communityHandlesContract.name;
   const functionName = 'namespace-reveal';
   const functionArgs: ClarityValue[] = [
     bufferCVFromString(namespace),
     bufferCVFromString(salt),
-    uintCV(100),
+    uintCV(lifetime),
     noneCV(),
   ];
 
-  const postConditions = [
-    makeStandardSTXPostCondition(stxAddress, FungibleConditionCode.LessEqual, stxToBurn),
-  ];
+  const postConditions: (string | PostCondition)[] = [];
 
   return (
     <button

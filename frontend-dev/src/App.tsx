@@ -4,21 +4,21 @@ import './App.css';
 import * as MicroStacks from '@micro-stacks/react';
 import { WalletConnectButton } from './components/wallet-connect-button';
 import { UserCard } from './components/user-card';
-import { NamespaceBuyButton } from './components/namespace-buy-button';
-import { namesApi, network, smartcontractsApi } from './lib/stacksApi';
+import { NamespaceRevealButton } from './components/namespace-reveal-button';
+import { namesApi, network } from './lib/stacksApi';
 import { useEffect, useState } from 'react';
-import {
-  communityHandlesContract,
-  name,
-  namespace,
-  controllerContract,
-  pubkey,
-  signature,
-} from './lib/constants';
+import { communityHandlesContract, name, namespaces, pubkey, signature } from './lib/constants';
 import { OwnerPubkeyButton } from './components/owner-pubkey-button';
-import { RegisterNameButton } from './components/register-name-button';
 import { NamespaceSetControllerButton } from './components/namespace-set-controller-button';
-import { bufferCVFromString, cvToHex, cvToString, hexToCV } from 'micro-stacks/clarity';
+import { NamespacePreorderButton } from './components/namespace-preorder-button';
+import { RevealNameButton } from './components/reveal-name-button';
+import { PreorderNameButton } from './components/preorder-name-button';
+
+const { namespace, salt, controllerContract } = namespaces.nnnnnnno as {
+  namespace: string;
+  salt: string;
+  controllerContract?: { address: string; name: string };
+};
 
 function Contents() {
   const { stxAddress } = MicroStacks.useAccount();
@@ -31,17 +31,6 @@ function Contents() {
       });
       console.log(price.amount);
       setStxToBurn(parseInt(price.amount));
-
-      const info = await smartcontractsApi.callReadOnlyFunction({
-        contractAddress: 'SP000000000000000000002Q6VF78',
-        contractName: 'bns',
-        functionName: 'get-namespace-properties',
-        readOnlyFunctionArgs: {
-          sender: 'SP000000000000000000002Q6VF78',
-          arguments: [cvToHex(bufferCVFromString('btc'))],
-        },
-      });
-      console.log(cvToString(hexToCV(info.result as string)));
     };
     fn();
   }, [setStxToBurn, namesApi]);
@@ -76,39 +65,62 @@ function Contents() {
       {stxAddress && (
         <>
           <p className="read-the-docs">Add the new namespace</p>
-          <NamespaceBuyButton
+          <NamespacePreorderButton
             stxAddress={stxAddress}
-            namespaceContract={communityHandlesContract}
+            communityHandlesContract={communityHandlesContract}
             namespace={namespace}
             stxToBurn={stxToBurn || 0}
+            salt={salt}
           />
 
-          <NamespaceSetControllerButton
+          <NamespaceRevealButton
             stxAddress={stxAddress}
-            namespaceContract={communityHandlesContract}
+            communityHandlesContract={communityHandlesContract}
             namespace={namespace}
-            newController={controllerContract}
+            salt={salt}
           />
 
-          <p className="read-the-docs">Setup the namespace controller</p>
+          {controllerContract?.name && (
+            <NamespaceSetControllerButton
+              stxAddress={stxAddress}
+              namespaceContract={communityHandlesContract}
+              namespace={namespace}
+              newController={controllerContract}
+            />
+          )}
 
-          <OwnerPubkeyButton
-            stxAddress={stxAddress}
-            contract={controllerContract}
-            namespace={namespace}
-            pubkey={pubkey}
-          />
+          {controllerContract && (
+            <>
+              <p className="read-the-docs">Setup the namespace controller</p>
 
-          <p className="read-the-docs">Register a name</p>
+              <OwnerPubkeyButton
+                stxAddress={stxAddress}
+                contract={controllerContract}
+                namespace={namespace}
+                pubkey={pubkey}
+              />
 
-          <RegisterNameButton
-            stxAddress={stxAddress}
-            contract={controllerContract}
-            namespace={namespace}
-            name={name}
-            signature={signature}
-            zoneFileHash={'0x010203'}
-          />
+              <p className="read-the-docs">Register a name</p>
+
+              <PreorderNameButton
+                stxAddress={stxAddress}
+                contract={controllerContract}
+                namespace={namespace}
+                name={name}
+                salt={salt}
+              />
+
+              <RevealNameButton
+                stxAddress={stxAddress}
+                contract={controllerContract}
+                namespace={namespace}
+                name={name}
+                salt={salt}
+                signature={signature}
+                zoneFileHash={'0x010203'}
+              />
+            </>
+          )}
         </>
       )}
     </>

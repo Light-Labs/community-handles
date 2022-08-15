@@ -1,8 +1,8 @@
 import { Configuration, NamesApi, SmartContractsApi } from '@stacks/blockchain-api-client';
-import { StacksNetworkVersion } from 'micro-stacks/crypto';
-import { StacksMainnet } from 'micro-stacks/network';
+import { StacksMainnet, StacksTestnet } from 'micro-stacks/network';
+import { mainnet } from './constants';
 
-export const network = new StacksMainnet();
+export const network = mainnet ? new StacksMainnet() : new StacksTestnet();
 
 const config = new Configuration({
   basePath: network.coreApiUrl,

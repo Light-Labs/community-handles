@@ -10,50 +10,32 @@ import {
   PostCondition,
   PostConditionMode,
 } from 'micro-stacks/transactions';
-import { fromHexString } from '../lib/strings';
+import { addSaltAndhash160, fromHexString } from '../lib/strings';
 import { communityHandlesContract } from '../lib/constants';
 
-export const RegisterNameButton = ({
+export const PreorderNameButton = ({
   stxAddress,
   contract,
   name,
   namespace,
-  signature,
-  zoneFileHash,
+  salt,
 }: {
   stxAddress: string;
   contract: { address: string; name: string };
   name: string;
   namespace: string;
-  signature: string;
-  zoneFileHash: string;
+  salt: string;
 }) => {
   const { openContractCall } = useOpenContractCall();
-  const label = `Register name ${name}.${namespace}`;
+  const hashedSaltedName = addSaltAndhash160(`${name}.${namespace}`, salt);
+  const label = `Preorder name ${name}.${namespace}`;
   const contractAddress = contract.address;
   const contractName = contract.name;
-  const functionName = 'name-register';
-  const functionArgs: ClarityValue[] = [
-    bufferCVFromString(name),
-    bufferCV(fromHexString(signature)),
-    bufferCV(fromHexString(zoneFileHash)),
-  ];
+  const functionName = 'name-preorder';
+  const functionArgs: ClarityValue[] = [bufferCV(hashedSaltedName)];
 
   const postConditions: PostCondition[] = [
-    makeStandardSTXPostCondition(stxAddress, FungibleConditionCode.LessEqual, 5_000_000),
-    makeContractSTXPostCondition(
-      communityHandlesContract.address,
-      communityHandlesContract.name,
-      FungibleConditionCode.LessEqual,
-      1
-    ),
-    makeContractNonFungiblePostCondition(
-      communityHandlesContract.address,
-      communityHandlesContract.name,
-      NonFungibleConditionCode.DoesNotOwn,
-      createAssetInfo('SP000000000000000000002Q6VF78', 'bns', 'names'),
-      tupleCV({ namespace: bufferCVFromString(namespace), name: bufferCVFromString(name) })
-    ),
+    makeStandardSTXPostCondition(stxAddress, FungibleConditionCode.LessEqual, 10_000_000),
   ];
 
   return (
@@ -64,7 +46,7 @@ export const RegisterNameButton = ({
           contractName,
           functionName,
           functionArgs,
-          postConditionMode: PostConditionMode.Deny,
+          postConditions,
         });
       }}
     >

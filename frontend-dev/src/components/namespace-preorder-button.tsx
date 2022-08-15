@@ -13,13 +13,13 @@ import { addSaltAndhash160 } from '../lib/strings';
 
 export const NamespacePreorderButton = ({
   stxAddress,
-  namespaceContract,
+  communityHandlesContract,
   namespace,
   salt,
   stxToBurn,
 }: {
   stxAddress: string;
-  namespaceContract: { address: string; name: string };
+  communityHandlesContract: { address: string; name: string };
   namespace: string;
   salt: string;
   stxToBurn: number;
@@ -27,8 +27,8 @@ export const NamespacePreorderButton = ({
   const { openContractCall } = useOpenContractCall();
   const label = `Preorder namespace .${namespace}`;
   const hashedSaltedNamespace = addSaltAndhash160(namespace, salt);
-  const contractAddress = namespaceContract.address;
-  const contractName = namespaceContract.name;
+  const contractAddress = communityHandlesContract.address;
+  const contractName = communityHandlesContract.name;
   const functionName = 'namespace-preorder';
   const functionArgs: ClarityValue[] = [bufferCV(hashedSaltedNamespace), uintCV(stxToBurn)];
 

@@ -8,7 +8,10 @@ import {
 } from 'micro-stacks/clarity';
 import { useAuth, useOpenContractCall } from '@micro-stacks/react';
 import {
+  createAssetInfo,
   FungibleConditionCode,
+  makeContractFungiblePostCondition,
+  makeStandardFungiblePostCondition,
   makeStandardSTXPostCondition,
   PostCondition,
 } from 'micro-stacks/transactions';
@@ -34,7 +37,14 @@ export const NamespaceSetControllerButton = ({
     contractPrincipalCV(newController.address, newController.name),
   ];
 
-  const postConditions: PostCondition[] = [];
+  const postConditions: PostCondition[] = [
+    makeStandardFungiblePostCondition(
+      stxAddress,
+      FungibleConditionCode.Equal,
+      1,
+      createAssetInfo(namespaceContract.address, namespaceContract.name, 'danger-zone-token')
+    ),
+  ];
 
   return (
     <button
