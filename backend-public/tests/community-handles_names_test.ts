@@ -76,7 +76,6 @@ Clarinet.test({
         [
           "0x67676767676767676767",
           "0x6767",
-          types.uint(1),
           types.none(),
           types.none(),
         ],
@@ -115,7 +114,6 @@ Clarinet.test({
         [
           "0x67676767676767676767",
           "0x6767",
-          types.uint(1),
           types.none(),
           types.none(),
         ],

@@ -56,16 +56,19 @@
         (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace internal-price-high u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1))))        
         (ok true)))
 
-
+;; @desc renew a name for 1 ustx by namespace controller only
+;; @param namespace; controlled namespace
+;; @param name; name in the controlled namespace
+;; @param new-owner; optional new owner of name after renewal
+;; @param zonefile-hash; optional new zonefile hash after renewal
 (define-public (name-renewal (namespace (buff 20))
                              (name (buff 48))
-                             (stx-to-burn uint)
                              (new-owner (optional principal))
                              (zonefile-hash (optional (buff 20))))
     (let ((original-owner tx-sender))
         (try! (is-contract-caller-namespace-controller namespace))
         (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u1 u1))))
-        (try! (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-renewal namespace name stx-to-burn new-owner zonefile-hash)))
+        (try! (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-renewal namespace name u1 new-owner zonefile-hash)))
         (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace internal-price-high u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1))))
         (ok true)))
 

@@ -96,7 +96,7 @@
         (asserts! (is-none (map-get? renewal-signatures approval-signature)) err-signature-already-used) 
         (map-set renewal-signatures approval-signature name)
         (try! (pay-fees price))
-        (try! (contract-call? .community-handles name-renewal namespace name u1 new-owner zonefile-hash))
+        (try! (contract-call? .community-handles name-renewal namespace name new-owner zonefile-hash))
         (ok true)))
 
 (define-private (pay-fees (price uint))

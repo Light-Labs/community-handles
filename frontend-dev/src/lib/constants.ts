@@ -1,22 +1,24 @@
 const mainnet = false;
-// as ascii
-export const namespace = 'hhhhhhhh';
 export const communityHandlesContract = mainnet
   ? {
       address: 'SPC0KWNBJ61BDZRPF3W2GHGK3G3GKS8WZ7ND33PS',
-      name: 'community-handles-v1',
+      name: 'community-handles-v2',
     }
   : {
-      address: 'SPC0KWNBJ61BDZRPF3W2GHGK3G3GKS8WZ7ND33PS',
-      name: 'community-handles-v1',
+      address: 'ST2Z3FFKYT0MGAGWP8A8NZJZHGWW4Q3VGBSC1NDEB',
+      name: 'marked-black-elk',
     };
+
+    // as ascii
+export const namespace = 'hhhhhhhh';
+
 export const controllerContract = mainnet
   ? {
       address: 'SPC0KWNBJ61BDZRPF3W2GHGK3G3GKS8WZ7ND33PS',
       name: '',
     }
   : {
-      address: 'SPC0KWNBJ61BDZRPF3W2GHGK3G3GKS8WZ7ND33PS',
+      address: 'ST2Z3FFKYT0MGAGWP8A8NZJZHGWW4Q3VGBSC1NDEB',
       name: '',
     };
 
