@@ -109,7 +109,7 @@ Clarinet.test({
       Tx.contractCall(
         "register-namespace",
         "do-it",
-        [types.some(types.principal(deployer))],
+        [types.some(types.principal(account1))],
         deployer
       ),
     ]);
@@ -121,74 +121,6 @@ Clarinet.test({
       ["0x67676767676767676767"],
       account1
     );
-    response.result.expectSome().expectPrincipal(deployer);
-  },
-});
-
-Clarinet.test({
-  name: "Ensure that controller can't register names after price function editing was revoked",
-  async fn(chain: Chain, accounts: Map<string, Account>) {
-    const deployer = accounts.get("deployer")!.address;
-    const account1 = accounts.get("wallet_1")!.address;
-    const account2 = accounts.get("wallet_2")!.address;
-
-    setupNamespace(chain, deployer);
-
-    let block = chain.mineBlock([
-      Tx.contractCall(
-        "community-handles",
-        "name-register",
-        [
-          "0x67676767676767676767",
-          "0x6767",
-          types.principal(account1),
-          "0x0102030405060708090a",
-        ],
-        deployer
-      ),
-
-      Tx.contractCall(
-        "SP000000000000000000002Q6VF78.bns",
-        "namespace-revoke-function-price-edition",
-        ["0x67676767676767676767"],
-        deployer
-      ),
-
-      Tx.contractCall(
-        "community-handles",
-        "namespace-revoke-function-price-edition",
-        ["0x67676767676767676767"],
-        deployer
-      ),
-
-      Tx.contractCall(
-        "community-handles",
-        "name-register",
-        [
-          "0x67676767676767676767",
-          "0x6868",
-          types.principal(account2),
-          "0x0102030405060708090a",
-        ],
-        deployer
-      ),
-    ]);
-
-    // register name
-    block.receipts[0].result.expectOk().expectBool(true);
-    // try to block price function editing via bns
-    block.receipts[1].result
-      .expectErr()
-      // unauthorized because owned by contract
-      .expectInt(1011);
-
-    // do block price function editing via community handles
-    block.receipts[2].result.expectOk().expectBool(true);
-
-    // try to register a name for another user
-    block.receipts[3].result
-      .expectErr()
-      // unauthorized to change the price function for cheap name registration
-      .expectUint(1011);
+    response.result.expectSome().expectPrincipal(account1);
   },
 });
