@@ -245,7 +245,23 @@ Clarinet.test({
         ],
         deployer
       ),
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
 
+    // check current name owner
+    let ownerResponse = chain.callReadOnlyFn(
+      "SP000000000000000000002Q6VF78.bns",
+      "name-resolve",
+      ["0x67676767676767676767", "0x6767"],
+      account2
+    );
+    let nameData = ownerResponse.result.expectOk().expectTuple();
+    nameData["owner"].expectPrincipal(account1);
+    nameData["lease-ending-at"].expectSome().expectUint(1002);
+
+    chain.mineEmptyBlock(800); // lifetime is 1000
+
+    block = chain.mineBlock([
       Tx.contractCall(
         "SP000000000000000000002Q6VF78.bns",
         "name-transfer",
@@ -259,7 +275,18 @@ Clarinet.test({
       ),
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
-    block.receipts[1].result.expectOk().expectBool(true);
+
+    // check new name owner
+    ownerResponse = chain.callReadOnlyFn(
+      "SP000000000000000000002Q6VF78.bns",
+      "name-resolve",
+      ["0x67676767676767676767", "0x6767"],
+      account2
+    );
+    nameData = ownerResponse.result.expectOk().expectTuple();
+    nameData["owner"].expectPrincipal(account2);
+    nameData["lease-ending-at"].expectSome().expectUint(1002); // lease does not change on transfer
+    nameData["zonefile-hash"].expectBuff(new Uint8Array([])); // no zonefile hash was set during transfer
   },
 });
 

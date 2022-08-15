@@ -148,7 +148,7 @@ Clarinet.test({
       ),
 
       Tx.contractCall(
-        "ST000000000000000000002AMW42H.bns",
+        "SP000000000000000000002Q6VF78.bns",
         "namespace-revoke-function-price-edition",
         ["0x67676767676767676767"],
         deployer
