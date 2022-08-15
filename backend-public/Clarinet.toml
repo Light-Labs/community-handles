@@ -14,7 +14,19 @@ depends_on = []
 path = "contracts/approving-namespace-controller.clar"
 depends_on = []
 
-
 [contracts.preordering-namespace-controller]
 path = "contracts/preordering-namespace-controller.clar"
+depends_on = []
+
+[contracts.preordering-namespace-controller-2]
+path = "contracts/preordering-namespace-controller.clar"
+depends_on = []
+
+[contracts.crypto]
+path = "contracts/external/crypto.clar"
+depends_on = []
+
+
+[contracts.register-namespace]
+path = "contracts/external/register-namespace.clar"
 depends_on = []

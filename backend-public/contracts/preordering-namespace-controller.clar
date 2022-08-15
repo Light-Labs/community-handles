@@ -22,7 +22,7 @@
         (asserts! (is-eq owner tx-sender) err-not-authorized)
         (try! (pay-fees price))
         (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
-        (try! (as-contract (contract-call? .community-handles name-register namespace name zonefile-hash owner)))
+        (try! (as-contract (contract-call? .community-handles name-register namespace name owner zonefile-hash)))
         (ok true)))
 
 (define-private (pay-fees (price uint))

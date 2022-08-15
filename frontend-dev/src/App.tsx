@@ -5,7 +5,7 @@ import * as MicroStacks from '@micro-stacks/react';
 import { WalletConnectButton } from './components/wallet-connect-button';
 import { UserCard } from './components/user-card';
 import { NamespaceBuyButton } from './components/namespace-buy-button';
-import { namesApi, network } from './lib/stacksApi';
+import { namesApi, network, smartcontractsApi } from './lib/stacksApi';
 import { useEffect, useState } from 'react';
 import {
   communityHandlesContract,
@@ -18,6 +18,7 @@ import {
 import { OwnerPubkeyButton } from './components/owner-pubkey-button';
 import { RegisterNameButton } from './components/register-name-button';
 import { NamespaceSetControllerButton } from './components/namespace-set-controller-button';
+import { bufferCVFromString, cvToHex, cvToString, hexToCV } from 'micro-stacks/clarity';
 
 function Contents() {
   const { stxAddress } = MicroStacks.useAccount();
@@ -30,6 +31,17 @@ function Contents() {
       });
       console.log(price.amount);
       setStxToBurn(parseInt(price.amount));
+
+      const info = await smartcontractsApi.callReadOnlyFunction({
+        contractAddress: 'SP000000000000000000002Q6VF78',
+        contractName: 'bns',
+        functionName: 'get-namespace-properties',
+        readOnlyFunctionArgs: {
+          sender: 'SP000000000000000000002Q6VF78',
+          arguments: [cvToHex(bufferCVFromString('btc'))],
+        },
+      });
+      console.log(cvToString(hexToCV(info.result as string)));
     };
     fn();
   }, [setStxToBurn, namesApi]);
@@ -86,7 +98,7 @@ function Contents() {
             namespace={namespace}
             pubkey={pubkey}
           />
-          
+
           <p className="read-the-docs">Register a name</p>
 
           <RegisterNameButton

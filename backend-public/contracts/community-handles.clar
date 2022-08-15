@@ -1,32 +1,40 @@
 ;; @contract Community Handles
-;; @version 1
+;; @version 2
 
 (define-constant err-not-authorized (err u403))
 (define-constant internal-price-high u999999999999999999999999999999)
-(define-constant salt 0x00)
+(define-constant name-salt 0x00)
+(define-fungible-token danger-zone-token)
 
 (define-map namespace-controller (buff 20) principal)
 
 ;; variables for iteration functions
 (define-data-var ctx-bulk-registration-namespace (buff 20) 0x00)
 
-;; @desc register the namespace on-chain
-;; @param namespace; namespace to register
+;; @desc preorder the namespace on-chain
+;; @param hashed-salted-namespace; ripdem160 hash of namespace concat with salt
 ;; @param stx-to-burn; namespace price in ustx
+(define-public (namespace-preorder (hashed-salted-namespace (buff 20)) (stx-to-burn uint))
+    (contract-call? 'SP000000000000000000002Q6VF78.bns
+        namespace-preorder hashed-salted-namespace stx-to-burn))
+
+;; @desc reveal the namespace
+;; @param namespace; namespace to register
+;; @param salt; salt used during preorder
 ;; @param lifetime; number of blocks until a name expires
-(define-public (namespace-setup (namespace (buff 20)) (stx-to-burn uint) (lifetime uint))
-    (let ((hashed-salted-namespace (hash160 (concat namespace salt))))
-        (map-set namespace-controller namespace contract-caller)
-        (try! (contract-call? 'ST000000000000000000002AMW42H.bns
-                namespace-preorder hashed-salted-namespace stx-to-burn))    
-        (try! (contract-call? 'ST000000000000000000002AMW42H.bns
+;; @param controller; optional principal set as the first namespace controller
+;;          defaults to contract-caller
+(define-public (namespace-reveal (namespace (buff 20)) (salt (buff 20)) (lifetime uint) (controller (optional principal)))
+    (begin
+        (map-set namespace-controller namespace (default-to contract-caller controller))
+        (try! (contract-call? 'SP000000000000000000002Q6VF78.bns
                                 namespace-reveal
                                 namespace
                                 salt
                                 internal-price-high u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1
                                 lifetime
                                 (as-contract tx-sender)))        
-        (try! (as-contract (contract-call? 'ST000000000000000000002AMW42H.bns
+        (try! (as-contract (contract-call? 'SP000000000000000000002Q6VF78.bns
                                 namespace-ready namespace)))
         (ok true)))
 
@@ -37,28 +45,40 @@
 ;; @param owner; principal owning the name after registration 
 (define-public (name-register (namespace (buff 20))
                               (name (buff 48))
-                              (zonefile-hash (buff 20))
-                              (owner principal))
-    (let ((hash (hash160 (concat (concat (concat name 0x2e) namespace) salt))))
-        (try! (is-namespace-controller namespace))
-        (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
-        (try! (as-contract (to-uint-response (contract-call? 'ST000000000000000000002AMW42H.bns name-preorder hash u1))))
-        (try! (as-contract (to-bool-response (contract-call? 'ST000000000000000000002AMW42H.bns namespace-update-function-price namespace u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u1 u1))))
-        (try! (as-contract (to-bool-response (contract-call? 'ST000000000000000000002AMW42H.bns name-register namespace name salt zonefile-hash))))
-        (try! (as-contract (to-bool-response (contract-call? 'ST000000000000000000002AMW42H.bns name-transfer namespace name owner (some zonefile-hash)))))
-        (try! (as-contract (to-bool-response (contract-call? 'ST000000000000000000002AMW42H.bns namespace-update-function-price namespace internal-price-high u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1))))        
+                              (owner principal)
+                              (zonefile-hash (buff 20)))
+    (let ((hash (hash160 (concat (concat (concat name 0x2e) namespace) name-salt))))
+        (try! (is-contract-caller-namespace-controller namespace))
+        (try! (to-uint-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-preorder hash u1)))
+        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u1 u1))))
+        (try! (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-register namespace name name-salt zonefile-hash)))
+        (try! (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-transfer namespace name owner (some zonefile-hash))))
+        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace internal-price-high u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1))))        
         (ok true)))
+
+
+(define-public (name-renewal (namespace (buff 20))
+                             (name (buff 48))
+                             (stx-to-burn uint)
+                             (new-owner (optional principal))
+                             (zonefile-hash (optional (buff 20))))
+    (let ((original-owner tx-sender))
+        (try! (is-contract-caller-namespace-controller namespace))
+        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u1 u1))))
+        (try! (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-renewal namespace name stx-to-burn new-owner zonefile-hash)))
+        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace internal-price-high u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1))))
+        (ok true)))
+
 
 ;; iterator for bulk-name-register
 (define-private (bulk-name-register-iter (entry {name: (buff 48), owner: principal, zonefile-hash: (buff 20)}) (prev (response bool uint)))
     (let ((namespace (var-get ctx-bulk-registration-namespace))
           (name (get name entry))
-          (hash (hash160 (concat (concat (concat name 0x2e) namespace) salt)))
-          (zonefile-hash (get zonefile-hash entry)))
+          (hash (hash160 (concat (concat (concat name 0x2e) namespace) name-salt))))
         (try! prev)
-        (try! (as-contract (to-uint-response (contract-call? 'ST000000000000000000002AMW42H.bns name-preorder hash u1))))
-        (try! (as-contract (to-bool-response (contract-call? 'ST000000000000000000002AMW42H.bns name-register namespace name salt zonefile-hash))))
-        (try! (as-contract (to-bool-response (contract-call? 'ST000000000000000000002AMW42H.bns name-transfer namespace name (get owner entry) (some zonefile-hash)))))
+        (try! (to-uint-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-preorder hash u1)))
+        (try! (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-register namespace name name-salt (get zonefile-hash entry))))
+        (try! (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-transfer namespace name (get owner entry) (some (get zonefile-hash entry)))))
         (ok true)))
 
 ;; @desc register multiple namens for 1 ustx by namespace controller only
@@ -66,13 +86,12 @@
 ;; @param names; list of names with owner and hash of the attachment/zonefile for the name
 (define-public (bulk-name-register (namespace (buff 20)) (names (list 1000 {name: (buff 48), owner: principal, zonefile-hash: (buff 20)})))
     (begin
-        (try! (is-namespace-controller namespace))
+        (try! (is-contract-caller-namespace-controller namespace))
         (var-set ctx-bulk-registration-namespace namespace)
-        (try! (stx-transfer? (len names) tx-sender (as-contract tx-sender)))
-        (try! (as-contract (to-bool-response (contract-call? 'ST000000000000000000002AMW42H.bns namespace-update-function-price namespace u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u1 u1))))
+        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u0 u1 u1))))
         (try! (fold bulk-name-register-iter names (ok true)))
         (var-set ctx-bulk-registration-namespace 0x00)
-        (try! (as-contract (to-bool-response (contract-call? 'ST000000000000000000002AMW42H.bns namespace-update-function-price namespace internal-price-high u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1))))
+        (try! (as-contract (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns namespace-update-function-price namespace internal-price-high u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1 u1))))
         (ok true)))
 
 ;; convert response to standard uint response with uint error
@@ -89,7 +108,7 @@
            success (ok success)
            error (err (to-uint error))))
 
-(define-private (is-namespace-controller (namespace (buff 20)))
+(define-private (is-contract-caller-namespace-controller (namespace (buff 20)))
     (ok (asserts! (is-eq (map-get? namespace-controller namespace) (some contract-caller)) err-not-authorized)))
 
 (define-read-only (get-namespace-controller (namespace (buff 20)))
@@ -105,6 +124,8 @@
 ;; @param new-controller; new namespace controller
 (define-public (set-namespace-controller (namespace (buff 20)) (new-controller principal))
     (begin
-        (try! (is-namespace-controller namespace))
+        (try! (is-contract-caller-namespace-controller namespace))
+        (try! (ft-mint? danger-zone-token u1 tx-sender))
+        (try! (ft-burn? danger-zone-token u1 tx-sender))
         (map-set namespace-controller namespace new-controller)
         (ok true)))

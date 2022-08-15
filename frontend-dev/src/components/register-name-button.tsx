@@ -51,7 +51,7 @@ export const RegisterNameButton = ({
       communityHandlesContract.address,
       communityHandlesContract.name,
       NonFungibleConditionCode.DoesNotOwn,
-      createAssetInfo('ST000000000000000000002AMW42H', 'bns', 'names'),
+      createAssetInfo('SP000000000000000000002Q6VF78', 'bns', 'names'),
       tupleCV({ namespace: bufferCVFromString(namespace), name: bufferCVFromString(name) })
     ),
   ];
