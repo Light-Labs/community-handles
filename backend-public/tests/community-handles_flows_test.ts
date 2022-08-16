@@ -121,7 +121,7 @@ Clarinet.test({
       ),
       Tx.contractCall(
         "approving-namespace-controller",
-        "name-reveal",
+        "name-register",
         [
           "0x3131",
           "0x00",

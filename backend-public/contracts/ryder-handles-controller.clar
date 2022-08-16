@@ -1,3 +1,5 @@
+;; @contract Ryder Handles Controller
+;; @version 1
 
 (define-data-var contract-owner principal tx-sender)
 (define-map community-treasuries (buff 20) principal)
@@ -12,13 +14,15 @@
   { hashed-salted-fqn: (buff 20), buyer: principal }
   { created-at: uint, claimed: bool, price: uint })
 
-(define-map renewal-signatures (buff 65) (buff 48))
+(define-map renewal-signatures (buff 65) bool)
 
 ;; error codes
 (define-constant err-not-authorized (err u403))
 (define-constant err-not-found (err u404))
 (define-constant err-max-renewal-reached (err u500))
 (define-constant err-signature-already-used (err u501))
+(define-constant err-invalid-claim (err u502))
+(define-constant err-too-early (err u503))
 
 (define-constant err-name-already-claimed (err u2011))
 (define-constant err-name-claimability-expired (err u2012))
@@ -32,33 +36,33 @@
   (let ((price (var-get price-in-ustx))
         (former-preorder
             (map-get? name-preorders { hashed-salted-fqn: hashed-salted-fqn, buyer: tx-sender })))
-    ;; Ensure eventual former pre-order expired
+    ;; ensure eventual former pre-order expired
     (asserts!
       (if (is-none former-preorder)
         true
         (>= block-height (+ name-preorder-claimability-ttl
                             (unwrap-panic (get created-at former-preorder)))))
       err-preorder-already-exists)
-    ;; Ensure that the hashed fqn is 20 bytes long
+    ;; ensure that the hashed fqn is 20 bytes long
     (asserts! (is-eq (len hashed-salted-fqn) u20) err-hash-malformated)
-    ;; Ensure that user will be paying. First to escrow, then to community on reveal
+    ;; ensure that user will be paying. First to escrow, then to community on reveal
     (try! (pay-fees price none))
-    ;; Register the pre-order
+    ;; store the pre-order
     (map-set name-preorders
       { hashed-salted-fqn: hashed-salted-fqn, buyer: tx-sender }
       { created-at: block-height, claimed: false, price: price })
     (ok (+ block-height name-preorder-claimability-ttl))))
 
-;; reveal an ordered name
+;; @desc register an ordered name, this is the second tx of the registration flow
 ;; @event: tx-sender sends 1 stx
 ;; @event: community-handles burns 1 stx
 ;; @event: community-handles sends name nft to tx-sender
-(define-public (name-reveal (name (buff 48))
-                            (namespace (buff 20))
-                            (salt (buff 20))
-                            (owner principal)
-                            (approval-signature (buff 65))
-                            (zonefile-hash (buff 20)))
+(define-public (name-register (namespace (buff 20))
+                              (name (buff 48))                            
+                              (salt (buff 20))
+                              (approval-signature (buff 65))
+                              (owner principal)
+                              (zonefile-hash (buff 20)))
   (let ((hashed-salted-fqn (hash160 (concat (concat (concat name 0x2e) namespace) salt)))
         (preorder (unwrap!
           (map-get? name-preorders { hashed-salted-fqn: hashed-salted-fqn, buyer: owner })
@@ -74,6 +78,7 @@
     (asserts!
         (< block-height (+ (get created-at preorder) name-preorder-claimability-ttl))
         err-name-claimability-expired)
+    (map-set renewal-signatures approval-signature true)
     (try! (pay-fees-from-escrow (get price preorder) namespace))
     (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
     (try! (as-contract (contract-call? .community-handles name-register namespace name owner zonefile-hash)))
@@ -87,8 +92,8 @@
 ;; @param approval-signature; signed hash by the approver
 ;; @param new-owner;
 ;; @param zonefile-hash;
-(define-public (name-renewal (name (buff 48))
-                             (namespace (buff 20))
+(define-public (name-renewal (namespace (buff 20))
+                             (name (buff 48))
                              (salt (buff 20))
                              (approval-signature (buff 65))
                              (new-owner (optional principal))
@@ -100,7 +105,7 @@
       (asserts! (secp256k1-verify hash approval-signature (var-get approval-pubkey)) err-not-authorized)
       ;; signature must be unused
       (asserts! (is-none (map-get? renewal-signatures approval-signature)) err-signature-already-used) 
-      (map-set renewal-signatures approval-signature name)
+      (map-set renewal-signatures approval-signature true)
       (try! (pay-fees price (some namespace)))
       (try! (contract-call? .community-handles name-renewal namespace name new-owner zonefile-hash))
       (ok true)))
@@ -125,22 +130,6 @@
         (and (> amount-community u0)
             (try! (as-contract (stx-transfer? amount-community tx-sender community-treasury))))
         (ok true)))
-
-;; @desc Retrieve unused fees from escrow
-;; If name-reveal wasn't called successfully the community amount is in escrow
-;; and can be claimed by the controller-admin
-(define-public (claim-fees (hashed-salted-fqn (buff 20)) (owner principal))
-    (let ((preorder (unwrap!
-            (map-get? name-preorders { hashed-salted-fqn: hashed-salted-fqn, buyer: owner })
-            err-not-found))
-          (price (get price preorder))
-          (amount-controller-admin (/ (* price u70) u100))
-          (amount-community (- price amount-controller-admin)))
-      (and (> amount-community u0)
-           (not (get claimed preorder))
-           (> block-height (+ (get created-at preorder) name-preorder-claimability-ttl))
-           (try! (as-contract (stx-transfer? amount-community tx-sender (var-get contract-owner)))))
-      (ok true)))
 
 ;;
 ;; admin functions
@@ -178,15 +167,29 @@
         (try! (as-contract (contract-call? .community-handles set-namespace-controller namespace new-controller)))
         (ok true)))
 
+;;
+;; utilities
+;;
+
+;; @desc retrieve unused fees from escrow
+;; If name-register wasn't called successfully the community amount is in escrow
+;; and can be claimed by the controller-admin
+(define-public (claim-fees (hashed-salted-fqn (buff 20)) (owner principal))
+    (let ((preorder (unwrap!
+            (map-get? name-preorders { hashed-salted-fqn: hashed-salted-fqn, buyer: owner })
+            err-not-found))
+          (price (get price preorder))
+          (amount-controller-admin (/ (* price u70) u100))
+          (amount-community (- price amount-controller-admin)))
+      (asserts! (not (get claimed preorder)) err-invalid-claim)
+      (asserts! (> block-height (+ (get created-at preorder) name-preorder-claimability-ttl)) err-too-early)
+
+      (and (> amount-community u0)
+           (try! (as-contract (stx-transfer? amount-community tx-sender (var-get contract-owner)))))
+      (ok true)))
+
 (define-private (is-contract-owner)
     (ok (asserts! (is-eq tx-sender (var-get contract-owner)) err-not-authorized)))
 
 (define-read-only (get-contract-owner)
     (var-get contract-owner))
-
-;; convert response to standard bool response with uint error
-;; (response bool int) (response bool uint)
-(define-private (to-bool-response (value (response bool int)))
-    (match value
-        success (ok success)
-        error (err (to-uint error))))
