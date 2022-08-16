@@ -10,3 +10,6 @@ const config = new Configuration({
 });
 export const namesApi = new NamesApi(config);
 export const smartcontractsApi = new SmartContractsApi(config);
+export const genesisAddress = mainnet
+  ? 'SP000000000000000000002Q6VF78'
+  : 'ST000000000000000000002AMW42H';

@@ -5,6 +5,7 @@ import {
   FungibleConditionCode,
   makeContractNonFungiblePostCondition,
   makeContractSTXPostCondition,
+  makeStandardNonFungiblePostCondition,
   makeStandardSTXPostCondition,
   NonFungibleConditionCode,
   PostCondition,
@@ -12,6 +13,7 @@ import {
 } from 'micro-stacks/transactions';
 import { fromHexString } from '../lib/strings';
 import { communityHandlesContract } from '../lib/constants';
+import { genesisAddress } from '../lib/stacksApi';
 
 export const RevealNameButton = ({
   stxAddress,
@@ -48,15 +50,8 @@ export const RevealNameButton = ({
     makeContractNonFungiblePostCondition(
       contractAddress,
       contractName,
-      NonFungibleConditionCode.Owns,
-      createAssetInfo('SP000000000000000000002Q6VF78', 'bns', 'names'),
-      tupleCV({ namespace: bufferCVFromString(namespace), name: bufferCVFromString(name) })
-    ),
-    makeContractNonFungiblePostCondition(
-      contractAddress,
-      contractName,
       NonFungibleConditionCode.DoesNotOwn,
-      createAssetInfo('SP000000000000000000002Q6VF78', 'bns', 'names'),
+      createAssetInfo(genesisAddress, 'bns', 'names'),
       tupleCV({ namespace: bufferCVFromString(namespace), name: bufferCVFromString(name) })
     ),
   ];
