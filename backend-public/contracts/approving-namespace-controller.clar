@@ -52,12 +52,12 @@
 ;; @event: community-handles sends name nft to tx-sender
 (define-public (name-reveal (name (buff 48))
                             (salt (buff 20))
+                            (owner principal)
                             (approval-signature (buff 65))
                             (zonefile-hash (buff 20)))
-    (let ((owner tx-sender)
-          (hashed-salted-fqn (hash160 (concat (concat (concat name 0x2e) namespace) salt)))
+    (let ((hashed-salted-fqn (hash160 (concat (concat (concat name 0x2e) namespace) salt)))
           (preorder (unwrap!
-            (map-get? name-preorders { hashed-salted-fqn: hashed-salted-fqn, buyer: tx-sender })
+            (map-get? name-preorders { hashed-salted-fqn: hashed-salted-fqn, buyer: owner })
             err-not-found))
           (hash (sha256 (concat (concat (concat name 0x2e) namespace) salt))))
         ;; Name must be approved by current approver

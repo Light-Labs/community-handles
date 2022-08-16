@@ -125,6 +125,7 @@ Clarinet.test({
         [
           "0x3131",
           "0x00",
+          types.principal(account1),
           "0xd693e8d1d558a5aabff258de2bd5ec6da5eea52ec9b45e4c2c9f34aa547cabb3235ad7223adf3a8d4e51f3cd7fbefdc001fcee9d3e8ddda4643c42dcea07bb6700",
           "0x01020304",
         ],
