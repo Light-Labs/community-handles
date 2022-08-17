@@ -38,10 +38,9 @@
             (map-get? name-preorders { hashed-salted-fqn: hashed-salted-fqn, buyer: tx-sender })))
     ;; ensure eventual former pre-order expired
     (asserts!
-      (if (is-none former-preorder)
-        true
-        (>= block-height (+ name-preorder-claimability-ttl
-                            (unwrap-panic (get created-at former-preorder)))))
+      (or (is-none former-preorder)
+          (>= block-height (+ name-preorder-claimability-ttl
+                              (unwrap-panic (get created-at former-preorder)))))
       err-preorder-already-exists)
     ;; ensure that the hashed fqn is 20 bytes long
     (asserts! (is-eq (len hashed-salted-fqn) u20) err-hash-malformated)

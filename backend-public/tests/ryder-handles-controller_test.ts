@@ -395,7 +395,6 @@ Clarinet.test({
     ]);
     block.receipts[0].result.expectErr().expectUint(501); // signature already used
 
-
     block = chain.mineBlock([
       // test behaviour of changes pubkey (works also without this and the
       // correct keys)
@@ -447,5 +446,45 @@ Clarinet.test({
       account1,
       account2
     );
+  },
+});
+
+Clarinet.test({
+  name: "Ensure that controller admin can change controller for any namespace",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get("deployer")!.address;
+    const account1 = accounts.get("wallet_1")!.address;
+    const account2 = accounts.get("wallet_2")!.address;
+
+    setupNamespace(chain, deployer);
+
+    let block = chain.mineBlock([
+      Tx.contractCall(
+        "community-handles",
+        "set-namespace-controller",
+        ["0x67", `'${deployer}.ryder-handles-controller`],
+        deployer
+      ),
+    ]);
+
+    block.receipts[0].result.expectOk().expectBool(true);
+
+    block = chain.mineBlock([
+      Tx.contractCall(
+        "community-handles",
+        "set-namespace-controller",
+        ["0x67", types.principal(account1)],
+        deployer
+      ),
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+
+    const response = chain.callReadOnlyFn(
+      "community-handles",
+      "get-namespace-controller",
+      ["0x67"],
+      account1
+    );
+    response.result.expectSome().expectPrincipal(account1);
   },
 });
