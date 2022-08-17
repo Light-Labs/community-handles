@@ -36,7 +36,7 @@ export const RevealNameButton = ({
   const label = `Reveal name ${name}.${namespace}`;
   const contractAddress = contract.address;
   const contractName = contract.name;
-  const functionName = 'name-reveal';
+  const functionName = 'name-register';
   const functionArgs: ClarityValue[] = [
     bufferCVFromString(name),
     bufferCVFromString(salt),

@@ -55,10 +55,11 @@ Clarinet.test({
       ),
       Tx.contractCall(
         "approving-namespace-controller",
-        "name-reveal",
+        "name-register",
         [
           "0x3131",
           "0x00",
+          types.principal(account1),
           "0xd693e8d1d558a5aabff258de2bd5ec6da5eea52ec9b45e4c2c9f34aa547cabb3235ad7223adf3a8d4e51f3cd7fbefdc001fcee9d3e8ddda4643c42dcea07bb6700",
           "0x01020304",
         ],
@@ -72,14 +73,15 @@ Clarinet.test({
       ),
       Tx.contractCall(
         "approving-namespace-controller",
-        "name-reveal",
+        "name-register",
         [
           "0x3232",
           "0x00",
+          types.principal(account2),
           "0xb045f07cc9ebcba2cefce1191271d2a740a2f8e58987edf80a7813c51797ab8c085be7ccd4c45bda051179a2037dce166d20ca58ada462dad08eeb45427e74c301",
           "0x01020304",
         ],
-        account2
+        deployer
       ),
     ]);
 
