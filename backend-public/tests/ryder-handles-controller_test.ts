@@ -450,19 +450,19 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "Ensure that controller admin can change controller for any namespace",
+  name: "Ensure that controller admin can change controller for a namespace",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const deployer = accounts.get("deployer")!.address;
     const account1 = accounts.get("wallet_1")!.address;
     const account2 = accounts.get("wallet_2")!.address;
 
-    setupNamespace(chain, deployer);
+    setupNamespace2(chain, deployer);
 
     let block = chain.mineBlock([
       Tx.contractCall(
         "community-handles",
         "set-namespace-controller",
-        ["0x67", `'${deployer}.ryder-handles-controller`],
+        ["0x68686868686868686868", `'${deployer}.ryder-handles-controller`],
         deployer
       ),
     ]);
@@ -471,9 +471,9 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall(
-        "community-handles",
+        "ryder-handles-controller",
         "set-namespace-controller",
-        ["0x67", types.principal(account1)],
+        ["0x68686868686868686868", types.principal(account1)],
         deployer
       ),
     ]);
@@ -482,7 +482,7 @@ Clarinet.test({
     const response = chain.callReadOnlyFn(
       "community-handles",
       "get-namespace-controller",
-      ["0x67"],
+      ["0x68686868686868686868"],
       account1
     );
     response.result.expectSome().expectPrincipal(account1);
