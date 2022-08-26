@@ -5,7 +5,7 @@ import * as MicroStacks from '@micro-stacks/react';
 import { WalletConnectButton } from './components/wallet-connect-button';
 import { UserCard } from './components/user-card';
 import { NamespaceRevealButton } from './components/namespace-reveal-button';
-import { namesApi, network } from './lib/stacksApi';
+import { namesApi, network, smartcontractsApi } from './lib/stacksApi';
 import { useEffect, useState } from 'react';
 import { communityHandlesContract, name, namespaces, pubkey, signature } from './lib/constants';
 import { OwnerPubkeyButton } from './components/owner-pubkey-button';
@@ -13,10 +13,12 @@ import { NamespaceSetControllerButton } from './components/namespace-set-control
 import { NamespacePreorderButton } from './components/namespace-preorder-button';
 import { RevealNameButton } from './components/reveal-name-button';
 import { PreorderNameButton } from './components/preorder-name-button';
+import { TreasuryButton } from './components/treasury-button';
 
-const { namespace, salt, controllerContract } = namespaces.nnnnnnno as {
+const { namespace, salt, controllerContract, treasury } = namespaces.citycoins as {
   namespace: string;
   salt: string;
+  treasury?: string;
   controllerContract?: { address: string; name: string };
 };
 
@@ -99,6 +101,14 @@ function Contents() {
                 namespace={namespace}
                 pubkey={pubkey}
               />
+
+              {treasury && (
+                <TreasuryButton
+                  contract={controllerContract}
+                  namespace={namespace}
+                  treasury={treasury}
+                />
+              )}
 
               <p className="read-the-docs">Register a name</p>
 
