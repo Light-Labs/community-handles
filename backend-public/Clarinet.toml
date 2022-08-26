@@ -26,6 +26,10 @@ depends_on = []
 path = "contracts/ryder-handles-controller.clar"
 depends_on = []
 
+[contracts.support]
+path = "contracts/support.clar"
+depends_on = []
+
 [contracts.crypto]
 path = "contracts/external/crypto.clar"
 depends_on = []
@@ -34,3 +38,4 @@ depends_on = []
 [contracts.register-namespace]
 path = "contracts/external/register-namespace.clar"
 depends_on = []
+
