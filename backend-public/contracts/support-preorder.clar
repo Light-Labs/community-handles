@@ -1,8 +1,8 @@
 ;; claim fees and preorder the name again
 (define-public (claim-preorder (old-hashed-salted-fqn (buff 20)) (hashed-salted-fqn (buff 20)) (owner principal) (new-owner principal))
   (begin
-    (try! (contract-call? .ryder-handles-controller-v1 claim-fees old-hashed-salted-fqn owner))
-    (contract-call? .ryder-handles-controller-v1 name-preorder hashed-salted-fqn)))
+    (try! (contract-call? .ryder-handles-controller claim-fees old-hashed-salted-fqn owner))
+    (contract-call? .ryder-handles-controller name-preorder hashed-salted-fqn)))
 
 ;; register the preordered name and transfer to the new owner
 (define-public (register-transfer (namespace (buff 20))
@@ -13,7 +13,7 @@
                               (new-owner principal)
                               (zonefile-hash (buff 20)))
   (begin
-    (try! (contract-call? .ryder-handles-controller-v1 name-register namespace name salt approval-signature owner zonefile-hash))
+    (try! (contract-call? .ryder-handles-controller name-register namespace name salt approval-signature owner zonefile-hash))
     (to-bool-response (contract-call? 'SP000000000000000000002Q6VF78.bns name-transfer namespace name new-owner (some zonefile-hash)))))
 
 

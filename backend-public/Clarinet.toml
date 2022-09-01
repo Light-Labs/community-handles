@@ -26,8 +26,12 @@ depends_on = []
 path = "contracts/ryder-handles-controller.clar"
 depends_on = []
 
-[contracts.support]
-path = "contracts/support.clar"
+[contracts.support-preorder]
+path = "contracts/support-preorder.clar"
+depends_on = []
+
+[contracts.support-refund]
+path = "contracts/support-refund.clar"
 depends_on = []
 
 [contracts.crypto]
