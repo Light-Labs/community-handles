@@ -32,10 +32,11 @@
 ;; preorder a name by registering a hash of the salted name
 ;; tx-sender has to pay registration fees here
 ;; returns the blockheight before the name has to be revealed
-(define-public (name-preorder (hashed-salted-fqn (buff 20)))
+(define-public (name-preorder (hashed-salted-fqn (buff 20)) (buyer (optional principal)))
   (let ((price (var-get price-in-ustx))
+        (preorder-key { hashed-salted-fqn: hashed-salted-fqn, buyer: (default-to tx-sender buyer) })
         (former-preorder
-            (map-get? name-preorders { hashed-salted-fqn: hashed-salted-fqn, buyer: tx-sender })))
+            (map-get? name-preorders preorder-key)))
     ;; ensure eventual former pre-order expired
     (asserts!
       (or (is-none former-preorder)
@@ -48,7 +49,7 @@
     (try! (pay-fees price none))
     ;; store the pre-order
     (map-set name-preorders
-      { hashed-salted-fqn: hashed-salted-fqn, buyer: tx-sender }
+      preorder-key
       { created-at: block-height, claimed: false, price: price })
     (ok (+ block-height name-preorder-claimability-ttl))))
 
@@ -63,8 +64,9 @@
                               (owner principal)
                               (zonefile-hash (buff 20)))
   (let ((hashed-salted-fqn (hash160 (concat (concat (concat name 0x2e) namespace) salt)))
+        (preorder-key { hashed-salted-fqn: hashed-salted-fqn, buyer: owner })
         (preorder (unwrap!
-          (map-get? name-preorders { hashed-salted-fqn: hashed-salted-fqn, buyer: owner })
+          (map-get? name-preorders preorder-key)
           err-not-found))
         (hash (sha256 (concat (concat (concat name 0x2e) namespace) salt))))
     ;; Name must be approved by current approver
@@ -78,6 +80,7 @@
         (< block-height (+ (get created-at preorder) name-preorder-claimability-ttl))
         err-name-claimability-expired)
     (map-set renewal-signatures approval-signature true)
+    (map-set name-preorders preorder-key (merge preorder {claimed: true}))
     (try! (pay-fees-from-escrow (get price preorder) namespace))
     (try! (stx-transfer? u1 tx-sender (as-contract tx-sender)))
     (try! (as-contract (contract-call? .community-handles name-register namespace name owner zonefile-hash)))
@@ -174,8 +177,9 @@
 ;; If name-register wasn't called successfully the community amount is in escrow
 ;; and can be claimed by the controller-admin
 (define-public (claim-fees (hashed-salted-fqn (buff 20)) (owner principal))
-    (let ((preorder (unwrap!
-            (map-get? name-preorders { hashed-salted-fqn: hashed-salted-fqn, buyer: owner })
+    (let ((preorder-key { hashed-salted-fqn: hashed-salted-fqn, buyer: owner })
+          (preorder (unwrap!
+            (map-get? name-preorders preorder-key)
             err-not-found))
           (price (get price preorder))
           (amount-controller-admin (/ (* price u70) u100))
@@ -184,6 +188,7 @@
       (asserts! (> block-height (+ (get created-at preorder) name-preorder-claimability-ttl)) err-too-early)
 
       (and (> amount-community u0)
+           (map-set name-preorders preorder-key (merge preorder {claimed: true}))
            (try! (as-contract (stx-transfer? amount-community tx-sender (var-get contract-owner)))))
       (ok true)))
 

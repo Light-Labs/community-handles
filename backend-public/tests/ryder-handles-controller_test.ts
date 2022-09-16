@@ -55,7 +55,7 @@ Clarinet.test({
       Tx.contractCall(
         "ryder-handles-controller",
         "name-preorder",
-        [hashResponse1.result],
+        [hashResponse1.result, types.none()],
         account1
       ),
       Tx.contractCall(
@@ -74,7 +74,7 @@ Clarinet.test({
       Tx.contractCall(
         "ryder-handles-controller",
         "name-preorder",
-        [hashResponse2.result],
+        [hashResponse2.result, types.none()],
         account2
       ),
       Tx.contractCall(
@@ -167,7 +167,7 @@ Clarinet.test({
       Tx.contractCall(
         "ryder-handles-controller",
         "name-preorder",
-        [hashResponse1.result],
+        [hashResponse1.result, types.none()],
         account1
       ),
       Tx.contractCall(
@@ -258,7 +258,7 @@ Clarinet.test({
       Tx.contractCall(
         "ryder-handles-controller",
         "name-preorder",
-        [hashResponse1.result],
+        [hashResponse1.result, types.none()],
         account1
       ),
     ]);
@@ -294,6 +294,18 @@ Clarinet.test({
 
     block.receipts[0].result.expectErr().expectUint(503); // too early
 
+    // try to claim fees using a different key
+    block = chain.mineBlock([
+      Tx.contractCall(
+        "ryder-handles-controller",
+        "claim-fees",
+        [hashResponse1.result, types.principal(account2)],
+        account2
+      ),
+    ]);
+
+    block.receipts[0].result.expectErr().expectUint(404);
+
     // claim fees
     block = chain.mineBlock([
       Tx.contractCall(
@@ -311,6 +323,18 @@ Clarinet.test({
       `${deployer}.ryder-handles-controller`,
       deployer
     );
+
+    // try to claim fees again
+    block = chain.mineBlock([
+      Tx.contractCall(
+        "ryder-handles-controller",
+        "claim-fees",
+        [hashResponse1.result, types.principal(account1)],
+        account2
+      ),
+    ]);
+
+    block.receipts[0].result.expectErr().expectUint(502); // err-invalid-claim
   },
 });
 
@@ -353,7 +377,7 @@ Clarinet.test({
       Tx.contractCall(
         "ryder-handles-controller",
         "name-preorder",
-        [hashResponse1.result],
+        [hashResponse1.result, types.none()],
         account1
       ),
       Tx.contractCall(
