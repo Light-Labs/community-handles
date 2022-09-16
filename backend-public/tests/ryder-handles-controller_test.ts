@@ -1,6 +1,31 @@
 import { Clarinet, Tx, Chain, Account, types } from "./deps.ts";
 import { setupNamespace, setupNamespace2 } from "./utils.ts";
 
+const setupNamespaceController = (chain: Chain, deployer: string) => {
+  let block = chain.mineBlock([
+    Tx.contractCall(
+      "community-handles",
+      "set-namespace-controller",
+      ["0x67676767676767676767", `'${deployer}.ryder-handles-controller`],
+      deployer
+    ),
+  ]);
+
+  block.receipts[0].result.expectOk().expectBool(true);
+};
+
+const setupNamespaceController2 = (chain: Chain, deployer: string) => {
+  let block = chain.mineBlock([
+    Tx.contractCall(
+      "community-handles",
+      "set-namespace-controller",
+      ["0x68686868686868686868", `'${deployer}.ryder-handles-controller`],
+      deployer
+    ),
+  ]);
+  block.receipts[0].result.expectOk().expectBool(true);
+};
+
 Clarinet.test({
   name: "Ensure that users can register approved names",
   async fn(chain: Chain, accounts: Map<string, Account>) {
@@ -11,23 +36,8 @@ Clarinet.test({
     setupNamespace2(chain, deployer);
     setupNamespace(chain, deployer);
 
-    let block = chain.mineBlock([
-      Tx.contractCall(
-        "community-handles",
-        "set-namespace-controller",
-        ["0x67676767676767676767", `'${deployer}.ryder-handles-controller`],
-        deployer
-      ),
-      Tx.contractCall(
-        "community-handles",
-        "set-namespace-controller",
-        ["0x68686868686868686868", `'${deployer}.ryder-handles-controller`],
-        deployer
-      ),
-    ]);
-
-    block.receipts[0].result.expectOk().expectBool(true);
-    block.receipts[1].result.expectOk().expectBool(true);
+    setupNamespaceController(chain, deployer);
+    setupNamespaceController2(chain, deployer);
 
     const hashResponse1 = chain.callReadOnlyFn(
       "crypto",
@@ -43,7 +53,7 @@ Clarinet.test({
       deployer
     );
 
-    block = chain.mineBlock([
+    let block = chain.mineBlock([
       Tx.contractCall(
         "ryder-handles-controller",
         "set-approval-pubkey",
@@ -69,7 +79,7 @@ Clarinet.test({
           types.principal(account1),
           "0x01020304",
         ],
-        account1
+        account1 // called by name buyer
       ),
       Tx.contractCall(
         "ryder-handles-controller",
@@ -88,13 +98,13 @@ Clarinet.test({
           types.principal(account2),
           "0x01020304",
         ],
-        deployer
+        deployer // called by different user
       ),
     ]);
 
     block.receipts[0].result.expectOk().expectBool(true);
     // preorder and register a name
-    block.receipts[1].result.expectOk().expectUint(148);
+    block.receipts[1].result.expectOk().expectUint(149);
     block.receipts[2].result.expectOk().expectBool(true);
 
     // fees are sent to controller-admin and escrow on preorder
@@ -117,8 +127,111 @@ Clarinet.test({
     );
 
     // preorder and register a second name
-    block.receipts[3].result.expectOk().expectUint(148);
+    block.receipts[3].result.expectOk().expectUint(149);
     block.receipts[4].result.expectOk().expectBool(true);
+  },
+});
+
+
+
+Clarinet.test({
+  name: "Ensure that users can preorder and register names for other users",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get("deployer")!.address;
+    const account1 = accounts.get("wallet_1")!.address;
+    const account2 = accounts.get("wallet_2")!.address;
+
+    setupNamespace2(chain, deployer);
+    setupNamespace(chain, deployer);
+
+    setupNamespaceController(chain, deployer);
+    setupNamespaceController2(chain, deployer);
+
+    const hashResponse1 = chain.callReadOnlyFn(
+      "crypto",
+      "crypto-hash160",
+      ["0x31312e6767676767676767676700"],
+      deployer
+    );
+
+    const hashResponse2 = chain.callReadOnlyFn(
+      "crypto",
+      "crypto-hash160",
+      ["0x32322e6767676767676767676700"],
+      deployer
+    );
+
+    let block = chain.mineBlock([
+      Tx.contractCall(
+        "ryder-handles-controller",
+        "set-approval-pubkey",
+        [
+          "0x02a3b986401a619013ee1deee0ccba58a5b2235260d55259106e5fc9c53e6a9d71",
+        ],
+        deployer
+      ),
+      Tx.contractCall(
+        "ryder-handles-controller",
+        "name-preorder",
+        [hashResponse1.result, types.some(types.principal(account2))],
+        account1
+      ),
+      // try with wrong name buyer
+      Tx.contractCall(
+        "ryder-handles-controller",
+        "name-register",
+        [
+          "0x67676767676767676767",
+          "0x3131",
+          "0x00",
+          "0xd693e8d1d558a5aabff258de2bd5ec6da5eea52ec9b45e4c2c9f34aa547cabb3235ad7223adf3a8d4e51f3cd7fbefdc001fcee9d3e8ddda4643c42dcea07bb6700",
+          types.principal(account1),
+          "0x01020304",
+        ],
+        account1
+      ),
+      // register name with provided buyer
+      Tx.contractCall(
+        "ryder-handles-controller",
+        "name-register",
+        [
+          "0x67676767676767676767",
+          "0x3131",
+          "0x00",
+          "0xd693e8d1d558a5aabff258de2bd5ec6da5eea52ec9b45e4c2c9f34aa547cabb3235ad7223adf3a8d4e51f3cd7fbefdc001fcee9d3e8ddda4643c42dcea07bb6700",
+          types.principal(account2),
+          "0x01020304",
+        ],
+        deployer
+      ),
+    ]);
+
+    block.receipts[0].result.expectOk().expectBool(true);
+    // preorder 
+    block.receipts[1].result.expectOk().expectUint(149);
+    // try to register for wrong user
+    block.receipts[2].result.expectErr().expectUint(404);
+    // register for provided user
+    block.receipts[3].result.expectOk().expectBool(true);
+
+    // fees are sent to controller-admin and escrow on preorder
+    block.receipts[1].events.expectSTXTransferEvent(
+      6999999,
+      account1,
+      deployer
+    );
+    block.receipts[1].events.expectSTXTransferEvent(
+      3000000,
+      account1,
+      `${deployer}.ryder-handles-controller`
+    );
+
+    // fees in escrow are sent to community treasury on register
+    block.receipts[3].events.expectSTXTransferEvent(
+      3000000,
+      `${deployer}.ryder-handles-controller`,
+      deployer
+    );
   },
 });
 
@@ -131,16 +244,7 @@ Clarinet.test({
 
     setupNamespace(chain, deployer);
 
-    let block = chain.mineBlock([
-      Tx.contractCall(
-        "community-handles",
-        "set-namespace-controller",
-        ["0x67676767676767676767", `'${deployer}.ryder-handles-controller`],
-        deployer
-      ),
-    ]);
-
-    block.receipts[0].result.expectOk().expectBool(true);
+    setupNamespaceController(chain, deployer);
 
     const hashResponse1 = chain.callReadOnlyFn(
       "crypto",
@@ -149,7 +253,7 @@ Clarinet.test({
       deployer
     );
 
-    block = chain.mineBlock([
+    let block = chain.mineBlock([
       Tx.contractCall(
         "ryder-handles-controller",
         "set-approval-pubkey",
@@ -221,17 +325,7 @@ Clarinet.test({
     const account2 = accounts.get("wallet_2")!.address;
 
     setupNamespace(chain, deployer);
-
-    let block = chain.mineBlock([
-      Tx.contractCall(
-        "community-handles",
-        "set-namespace-controller",
-        ["0x67676767676767676767", `'${deployer}.ryder-handles-controller`],
-        deployer
-      ),
-    ]);
-
-    block.receipts[0].result.expectOk().expectBool(true);
+    setupNamespaceController(chain, deployer);
 
     const hashResponse1 = chain.callReadOnlyFn(
       "crypto",
@@ -240,7 +334,7 @@ Clarinet.test({
       deployer
     );
 
-    block = chain.mineBlock([
+    let block = chain.mineBlock([
       Tx.contractCall(
         "ryder-handles-controller",
         "set-approval-pubkey",
@@ -346,17 +440,7 @@ Clarinet.test({
     const account2 = accounts.get("wallet_2")!.address;
 
     setupNamespace(chain, deployer);
-
-    let block = chain.mineBlock([
-      Tx.contractCall(
-        "community-handles",
-        "set-namespace-controller",
-        ["0x67676767676767676767", `'${deployer}.ryder-handles-controller`],
-        deployer
-      ),
-    ]);
-
-    block.receipts[0].result.expectOk().expectBool(true);
+    setupNamespaceController(chain, deployer);
 
     const hashResponse1 = chain.callReadOnlyFn(
       "crypto",
@@ -365,7 +449,7 @@ Clarinet.test({
       deployer
     );
 
-    block = chain.mineBlock([
+    let block = chain.mineBlock([
       Tx.contractCall(
         "ryder-handles-controller",
         "set-approval-pubkey",
@@ -481,19 +565,9 @@ Clarinet.test({
     const account2 = accounts.get("wallet_2")!.address;
 
     setupNamespace2(chain, deployer);
+    setupNamespaceController2(chain, deployer);
 
     let block = chain.mineBlock([
-      Tx.contractCall(
-        "community-handles",
-        "set-namespace-controller",
-        ["0x68686868686868686868", `'${deployer}.ryder-handles-controller`],
-        deployer
-      ),
-    ]);
-
-    block.receipts[0].result.expectOk().expectBool(true);
-
-    block = chain.mineBlock([
       Tx.contractCall(
         "ryder-handles-controller",
         "set-namespace-controller",
