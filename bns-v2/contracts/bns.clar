@@ -218,12 +218,11 @@
 ;; Note: the following method is used in name-import and name-register. The latter ensure that the name
 ;; can be registered, the former does not. 
 (define-private (mint-or-transfer-name? (namespace (buff 20)) (name (buff 48)) (beneficiary principal))
-    (let (
-      (current-owner (nft-get-owner? names (tuple (name name) (namespace namespace)))))
+    (let 
+      ((current-owner (nft-get-owner? names (tuple (name name) (namespace namespace))))
       ;; The principal can register a name
-      (asserts!
-        (try! (can-receive-name beneficiary))
-        (err ERR_PRINCIPAL_ALREADY_ASSOCIATED))
+      (has-no-primary-name (try! (can-receive-name beneficiary))))
+
       (if (is-none current-owner)
         ;; This is a new name, let's mint it
         (begin
@@ -233,9 +232,9 @@
               { name: name, namespace: namespace }
               beneficiary)
             (err ERR_NAME_COULD_NOT_BE_MINTED))
-          (map-set owner-name
+          (and has-no-primary-name (map-set owner-name
             beneficiary
-            { name: name, namespace: namespace })
+            { name: name, namespace: namespace }))
           (ok true))
         (update-name-ownership? namespace name (unwrap-panic current-owner) beneficiary))))
 
@@ -245,14 +244,18 @@
                                         (to principal))
   (if (is-eq from to)
     (ok true)
-    (begin
+    (let (
+          (recipient-has-no-primary-name (try! (can-receive-name to)))
+          (primary-name-is-sent true) ;; TODO
+      )
+  
       (unwrap!
         (nft-transfer? names { name: name, namespace: namespace } from to)
         (err ERR_NAME_COULD_NOT_BE_TRANSFERED))
-      (map-delete owner-name from)
-      (map-set owner-name
+      (and primary-name-is-sent (map-delete owner-name from))
+      (and recipient-has-no-primary-name (map-set owner-name
         to
-        { name: name, namespace: namespace })
+        { name: name, namespace: namespace }))
       (ok true))))
 
 (define-private (update-zonefile-and-props (namespace (buff 20))
@@ -682,11 +685,6 @@
                               (zonefile-hash (optional (buff 20))))
   (let (
     (data (try! (check-name-ops-preconditions namespace name)))
-    (can-new-owner-get-name (try! (can-receive-name new-owner))))
-    ;; The new owner does not own a name
-    (asserts!
-      can-new-owner-get-name
-      (err ERR_PRINCIPAL_ALREADY_ASSOCIATED))
     ;; Transfer the name
     (unwrap!
       (update-name-ownership? namespace name tx-sender new-owner)
@@ -776,7 +774,7 @@
     ;; Transfer the name, if any new-owner
     (if (is-none new-owner)
       true 
-      (try! (can-receive-name (unwrap-panic new-owner))))
+      (name-transfer namespace name (unwrap-panic new-owner)))
     ;; Update the zonefile, if any.
     (if (is-none zonefile-hash)
       (map-set name-properties
@@ -957,6 +955,12 @@
         lease-started-at: lease-started-at,
         lease-ending-at: (if (is-eq (get lifetime namespace-props) u0) none (some (+ lease-started-at (get lifetime namespace-props))))
       }))))
+
+(define-public (set-primary-name (namespace (buff 20)) (name (buff 48)))
+  (begin 
+    (asserts! (is-eq tx-sender (try! (name-resolve namespace name))))
+    (map-set owner-name tx-sender {namespace: namespace, name: name})
+    (ok true)))
 
 (define-read-only (get-namespace-properties (namespace (buff 20)))
   (let (
