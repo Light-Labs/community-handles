@@ -1,17 +1,19 @@
 (define-data-var controller principal tx-sender)
-(define-map bns uint principal)
-(define-data-var version uint 0)
+(define-map bns-versions uint principal)
+(define-data-var version uint u0)
+
+(define-constant err-not-authorized (err 403))
 
 (define-public (set-next-version (bns principal))
     (let ((new-version (+ u1 (var-get version))))
-        (asssert! (is-eq contract-caller (var-get controller)))
+        (asserts! (is-eq contract-caller (var-get controller)) err-not-authorized)
         (var-set version new-version)
-        (map-set bns new-version bns)
+        (map-set bns-versions new-version bns)
         (ok true)))
 
 (define-public (set-controller (new-controller principal))
     (begin
-        (assert! (is-eq contract-caller (var-get controller)))
+        (asserts! (is-eq contract-caller (var-get controller)) err-not-authorized)
         (var-set controller new-controller)
         (ok true)))
 
@@ -19,7 +21,7 @@
     (var-get version))
 
 (define-read-only (get-bns)
-    (unwrap-panic (map-get? bns (get-version))))
+    (unwrap-panic (map-get? bns-versions (get-version))))
 
 (define-read-only (get-controller)
     (var-get controller))

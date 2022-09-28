@@ -5,8 +5,19 @@ authors = []
 telemetry = false
 cache_dir = "./.requirements"
 
-# [contracts.counter]
-# path = "contracts/counter.clar"
+[contracts.bns-registry]
+path = "contracts/bns-registry.clar"
+
+[contracts.bns]
+path = "contracts/bns.clar"
+
+
+[contracts.sell-bns]
+path = "contracts/sell-bns.clar"
+
+[contracts.crypto]
+path = "contracts/external/crypto.clar"
+depends_on = []
 
 [repl.analysis]
 passes = ["check_checker"]
