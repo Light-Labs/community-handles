@@ -1,4 +1,4 @@
-import { bufferCV, bufferCVFromString, ClarityValue, tupleCV } from 'micro-stacks/clarity';
+import { bufferCV, bufferCVFromString, ClarityValue, noneCV, tupleCV } from 'micro-stacks/clarity';
 import { useOpenContractCall } from '@micro-stacks/react';
 import {
   createAssetInfo,
@@ -32,7 +32,7 @@ export const PreorderNameButton = ({
   const contractAddress = contract.address;
   const contractName = contract.name;
   const functionName = 'name-preorder';
-  const functionArgs: ClarityValue[] = [bufferCV(hashedSaltedName)];
+  const functionArgs: ClarityValue[] = [bufferCV(hashedSaltedName), noneCV()];
 
   const postConditions: PostCondition[] = [
     makeStandardSTXPostCondition(stxAddress, FungibleConditionCode.LessEqual, 10_000_000),

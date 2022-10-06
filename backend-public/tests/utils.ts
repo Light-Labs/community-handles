@@ -4,7 +4,7 @@ export function setupNamespace(chain: Chain, deployer: string) {
   const hashResponse = chain.callReadOnlyFn(
     "crypto",
     "crypto-hash160",
-    ["0x6767676767676767676700"],
+    ["0x6767676767676767676700"], // namespace + salt 0x00
     deployer
   );
 

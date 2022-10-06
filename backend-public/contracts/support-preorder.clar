@@ -2,7 +2,7 @@
 (define-public (claim-preorder (old-hashed-salted-fqn (buff 20)) (hashed-salted-fqn (buff 20)) (owner principal) (new-owner principal))
   (begin
     (try! (contract-call? .ryder-handles-controller claim-fees old-hashed-salted-fqn owner))
-    (contract-call? .ryder-handles-controller name-preorder hashed-salted-fqn)))
+    (contract-call? .ryder-handles-controller name-preorder hashed-salted-fqn (some new-owner))))
 
 ;; register the preordered name and transfer to the new owner
 (define-public (register-transfer (namespace (buff 20))
